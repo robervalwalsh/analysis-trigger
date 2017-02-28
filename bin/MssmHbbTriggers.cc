@@ -13,7 +13,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TVectorD.h"
 
-#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Core/interface/Analysis.h"
 
 #include "HLTPathsAllHad.h"
 #include "L1TriggersAllHad.h"
@@ -27,6 +27,8 @@ using namespace analysis::tools;
 
 
 std::map<std::string, TH1F*> h1_;
+std::map<std::string, TH1F*> h1x_;
+
 TGraphAsymmErrors * g_eff_;
 TGraphErrors * g_rates_;
 std::string inputList_;
@@ -63,6 +65,11 @@ int main(int argc, char * argv[])
    for ( size_t i = 0 ; i < triggers_.size(); ++i )
    {
       h1_[triggers_[i]] = new TH1F(Form("h_n%s",triggers_[i].c_str()),"",58,4.5,62.5);
+      h1x_[Form("jetsN_%s",triggers_[i].c_str())]   = new TH1F(Form("h_jetsN_%s",triggers_[i].c_str()),"",10,0,10);
+      h1x_[Form("jetsPT_%s",triggers_[i].c_str())]  = new TH1F(Form("h_jetsPT_%s",triggers_[i].c_str()),"",2000,0,1000);
+      h1x_[Form("jetsETA_%s",triggers_[i].c_str())] = new TH1F(Form("h_jetsETA_%s",triggers_[i].c_str()),"",500,-5,5);
+      h1x_[Form("jetsPHI_%s",triggers_[i].c_str())] = new TH1F(Form("h_jetsPHI_%s",triggers_[i].c_str()),"",630,-3.15,3.15);
+
    }
    
    // Input files list
@@ -145,7 +152,8 @@ int main(int argc, char * argv[])
          h1_["ZeroBias"] -> Fill(nPileup);
       }
       
-      if ( L1DoubleJetC100(analysis) )
+      
+      if ( L1DoubleJetC100(analysis,h1x_,"L1_DoubleJetC100") )
       {
          h1_["L1_DoubleJetC100"] -> Fill(nPileup);
       }
@@ -189,6 +197,16 @@ int main(int argc, char * argv[])
    sampleName.Write();
    
    f_out -> Close();
+   
+   TFile * f_dist = new TFile(Form("mssmhbb_triggers_distributions_%s.root",basename_.c_str()),"RECREATE");
+   
+   for ( auto & h : h1x_ )
+   {
+      std::cout << h.first << std::endl;
+      h.second->Write();
+   }
+
+   f_dist -> Close();   
    
 //    
 }

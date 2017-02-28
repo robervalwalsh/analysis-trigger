@@ -1,14 +1,14 @@
 #ifndef Analysis_TriggerStudies_L1TriggersAllHad_h
 #define Analysis_TriggerStudies_L1TriggersAllHad_h 1
 
-#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Core/interface/Analysis.h"
 
 using namespace std;
 using namespace analysis;
 using namespace analysis::tools;
 
 
-bool L1DoubleJetC100(Analysis & );
+bool L1DoubleJetC100(Analysis & , std::map<std::string, TH1F*> & , const std::string & );
 bool L1DoubleJet100Eta2p3(Analysis & );
 bool L1DoubleJet100Eta2p3_dEtaMax1p6(Analysis & );
 
@@ -16,9 +16,22 @@ bool L1DoubleJet100Eta2p3_dEtaMax1p6(Analysis & );
 // L1 triggers
 
 // ----------------------------------------------------------------------
-bool L1DoubleJetC100(Analysis & analysis)
+bool L1DoubleJetC100(Analysis & analysis, std::map<std::string, TH1F*> & hist, const std::string & name )
 {
    if ( ! analysis.triggerResult("HLT_L1DoubleJetC100_v") ) return false;
+   
+   auto l1dijet100 = analysis.collection<TriggerObject>("hltL1sDoubleJetC100");
+   
+   
+   hist[Form("jetsN_%s",name.c_str())] -> Fill(l1dijet100->size());
+   for ( int j = 0 ; j < l1dijet100->size() ; ++j )
+   {
+       TriggerObject jet = l1dijet100->at(j);
+       hist[Form("jetsPT_%s",name.c_str())]  -> Fill(jet.pt());
+       hist[Form("jetsETA_%s",name.c_str())] -> Fill(jet.eta());
+       hist[Form("jetsPHI_%s",name.c_str())] -> Fill(jet.phi());
+   }
+   
    
    return true;
 }
@@ -27,7 +40,7 @@ bool L1DoubleJetC100(Analysis & analysis)
 
 bool L1DoubleJet100Eta2p3(Analysis & analysis)
 {
-   if ( ! L1DoubleJetC100(analysis) )                      return false;
+   if ( ! analysis.triggerResult("HLT_L1DoubleJetC100_v") ) return false;
    
    auto l1dijet100 = analysis.collection<TriggerObject>("hltL1sDoubleJetC100");
    if ( l1dijet100->size() < 2 )                           return false;
@@ -50,7 +63,7 @@ bool L1DoubleJet100Eta2p3(Analysis & analysis)
 
 bool L1DoubleJet100Eta2p3_dEtaMax1p6(Analysis & analysis)
 {
-   if ( ! L1DoubleJetC100(analysis) )                       return false;
+   if ( ! analysis.triggerResult("HLT_L1DoubleJetC100_v") ) return false;
    
    auto l1dijet100 = analysis.collection<TriggerObject>("hltL1sDoubleJetC100");
    if ( l1dijet100->size() < 2 )                            return false;
