@@ -4,7 +4,7 @@
 <use name="rootmath"/>
 <use name="rootgraphics"/>
 <use name="boost" />
-<use name="Analysis/Tools" />
+<use name="Analysis/Core" />
 
 <bin   name="AllHadTrigger" file="AllHadTrigger.cc">
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>

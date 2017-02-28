@@ -10,7 +10,7 @@
 #include "TH2.h" 
 #include "TGraphAsymmErrors.h"
 
-#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Core/interface/Analysis.h"
 
 #include "lumis.h"
 

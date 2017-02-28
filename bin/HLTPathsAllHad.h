@@ -4,7 +4,7 @@
 
 #include "L1TriggersAllHad.h"
 
-#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Core/interface/Analysis.h"
 
 using namespace std;
 using namespace analysis;
