@@ -55,6 +55,12 @@ int main(int argc, char * argv[])
    xsections_ = CrossSections();
    
    triggers_.push_back("ZeroBias");
+   triggers_.push_back("L1_SingleJet20");
+   triggers_.push_back("L1_SingleJet30");
+   triggers_.push_back("L1_SingleJet35");
+   triggers_.push_back("L1_SingleJet50");
+   triggers_.push_back("L1_SingleJet90");
+   triggers_.push_back("L1_SingleJet100");
    triggers_.push_back("L1_DoubleJetC100");
    triggers_.push_back("L1_DoubleJetC100Eta2p3");
    triggers_.push_back("L1_DoubleJetC100Eta2p3_dEtaMax1p6");
@@ -90,6 +96,7 @@ int main(int argc, char * argv[])
    
 // Trigger objects
    // L1 seeds
+   jetTriggerObjects_.push_back("hltL1ssingleJet20");
    // L1_DoubleJetC100
    jetTriggerObjects_.push_back("hltL1sDoubleJetC100");
    
@@ -152,6 +159,12 @@ int main(int argc, char * argv[])
          h1_["ZeroBias"] -> Fill(nPileup);
       }
       
+      int ptmin[6] = {20,30,35,50,90,100};
+      for ( int ii = 0; ii < 6 ; ++ii )
+      {
+         if ( L1SingleJet(analysis,h1x_,ptmin[ii]) )
+            h1_[Form("L1_SingleJet%i",ptmin[ii])] -> Fill(nPileup);
+      }
       
       if ( L1DoubleJetC100(analysis,h1x_,"L1_DoubleJetC100") )
       {

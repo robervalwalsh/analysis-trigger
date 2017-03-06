@@ -8,12 +8,45 @@ using namespace analysis;
 using namespace analysis::tools;
 
 
+bool L1SingleJet(Analysis & , std::map<std::string, TH1F*> & , const int & );
 bool L1DoubleJetC100(Analysis & , std::map<std::string, TH1F*> & , const std::string & );
 bool L1DoubleJet100Eta2p3(Analysis & );
 bool L1DoubleJet100Eta2p3_dEtaMax1p6(Analysis & );
 
 
 // L1 triggers
+
+
+bool L1SingleJet(Analysis & analysis, std::map<std::string, TH1F*> & hist, const int & ptmin )
+{
+   if ( ! analysis.triggerResult("HLT_L1SingleJet20_v") ) return false;
+   std::string name  = "L1_SingleJet"+std::to_string(ptmin);
+   
+   auto l1jet20 = analysis.collection<TriggerObject>("hltL1ssingleJet20");
+   
+   std::vector<TriggerObject> l1jet;
+   for ( int j = 0 ; j < l1jet20->size() ; ++j )
+   {
+      TriggerObject jet = l1jet20->at(j);
+      if ( jet.pt() < float(ptmin) ) continue;
+      l1jet.push_back(jet);
+   }
+   
+   if ( l1jet.size() < 1 ) return false;
+   
+   hist[Form("jetsN_%s",name.c_str())] -> Fill(l1jet.size());
+   for ( size_t j = 0 ; j < l1jet.size() ; ++j )
+   {
+       TriggerObject jet = l1jet.at(j);
+       hist[Form("jetsPT_%s",name.c_str())]  -> Fill(jet.pt());
+       hist[Form("jetsETA_%s",name.c_str())] -> Fill(jet.eta());
+       hist[Form("jetsPHI_%s",name.c_str())] -> Fill(jet.phi());
+   }
+   
+   return true;
+   
+}
+
 
 // ----------------------------------------------------------------------
 bool L1DoubleJetC100(Analysis & analysis, std::map<std::string, TH1F*> & hist, const std::string & name )
