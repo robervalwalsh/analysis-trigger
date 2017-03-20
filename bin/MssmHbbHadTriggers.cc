@@ -62,11 +62,18 @@ int main(int argc, char * argv[])
    triggers_.push_back("L1_SingleJet90");
    triggers_.push_back("L1_SingleJet100");
    triggers_.push_back("L1_DoubleJetC100");
-   triggers_.push_back("L1_DoubleJetC100Eta2p3");
+   triggers_.push_back("L1_DoubleJetC112");
+   triggers_.push_back("L1_DoubleJetC100Eta2p4");
    triggers_.push_back("L1_DoubleJetC100Eta2p3_dEtaMax1p6");
+   triggers_.push_back("L1_DoubleJetC112Eta2p3_dEtaMax1p6");
+   triggers_.push_back("L1_DoubleJetC100Eta2p3_dEtaMax1p6_NotIn112");
    triggers_.push_back("HLT_LowMassAllHad");
    triggers_.push_back("HLT_LowMassAllHad2017");
    triggers_.push_back("L1_SingleMu3");
+   triggers_.push_back("L1_Mu3_JetC60");
+   triggers_.push_back("L1_Mu10_DiJet32");
+   triggers_.push_back("L1_Mu12_DiJet32");
+   triggers_.push_back("L1_Mu10_DiJet40");
    
    for ( size_t i = 0 ; i < triggers_.size(); ++i )
    {
@@ -75,6 +82,9 @@ int main(int argc, char * argv[])
       h1x_[Form("jetsPT_%s",triggers_[i].c_str())]  = new TH1F(Form("h_jetsPT_%s",triggers_[i].c_str()),"",2000,0,1000);
       h1x_[Form("jetsETA_%s",triggers_[i].c_str())] = new TH1F(Form("h_jetsETA_%s",triggers_[i].c_str()),"",500,-5,5);
       h1x_[Form("jetsPHI_%s",triggers_[i].c_str())] = new TH1F(Form("h_jetsPHI_%s",triggers_[i].c_str()),"",630,-3.15,3.15);
+      h1x_[Form("jet1PT_%s",triggers_[i].c_str())]  = new TH1F(Form("h_jet1PT_%s",triggers_[i].c_str()),"",2000,0,1000);
+      h1x_[Form("jet1ETA_%s",triggers_[i].c_str())] = new TH1F(Form("h_jet1ETA_%s",triggers_[i].c_str()),"",500,-5,5);
+      h1x_[Form("jet1PHI_%s",triggers_[i].c_str())] = new TH1F(Form("h_jet1PHI_%s",triggers_[i].c_str()),"",630,-3.15,3.15);
 
    }
    
@@ -96,7 +106,8 @@ int main(int argc, char * argv[])
    
 // Trigger objects
    // L1 seeds
-   jetTriggerObjects_.push_back("hltL1ssingleJet20");
+   jetTriggerObjects_.push_back("hltL1sSingleMu3");
+   jetTriggerObjects_.push_back("hltL1sSingleJet20");
    // L1_DoubleJetC100
    jetTriggerObjects_.push_back("hltL1sDoubleJetC100");
    
@@ -150,9 +161,12 @@ int main(int argc, char * argv[])
       }
       else
       {
-         nPileup = (float)analysis.nTruePileup();
+         nPileup = (float)analysis.nTruePileup() + 1;
+//         std::cout << analysis.nTruePileup() <<std::endl;
+         if ( nPileup < 28 ) continue;
       }
        
+      
       // hltPath0 - reference trigger
       if ( analysis.triggerResult("HLT_ZeroBias_v") ) 
       {
@@ -162,27 +176,65 @@ int main(int argc, char * argv[])
       int ptmin[6] = {20,30,35,50,90,100};
       for ( int ii = 0; ii < 6 ; ++ii )
       {
-         if ( L1SingleJet(analysis,h1x_,ptmin[ii]) )
+//         if ( int(nPileup) == 30 ) std::cout << nPileup << std::endl;
+         if ( L1SingleJet(analysis,h1x_,ptmin[ii],nPileup) )
             h1_[Form("L1_SingleJet%i",ptmin[ii])] -> Fill(nPileup);
       }
       
-      if ( L1DoubleJetC100(analysis,h1x_,"L1_DoubleJetC100") )
+      if ( L1Mu3JetC60(analysis) )
+      {
+         h1_["L1_Mu3_JetC60"] -> Fill(nPileup);
+      }
+      
+      if ( L1Mu10DiJet32(analysis) )
+      {
+         h1_["L1_Mu10_DiJet32"] -> Fill(nPileup);
+      }
+      
+      if ( L1Mu10DiJet40(analysis) )
+      {
+         h1_["L1_Mu10_DiJet40"] -> Fill(nPileup);
+      }
+      
+      if ( L1Mu12DiJet32(analysis) )
+      {
+         h1_["L1_Mu12_DiJet32"] -> Fill(nPileup);
+      }
+      
+      
+      if ( L1DoubleJetC100(analysis,h1x_,"L1_DoubleJetC100", nPileup) )
       {
          h1_["L1_DoubleJetC100"] -> Fill(nPileup);
       }
+      
+      if ( L1DoubleJetC112(analysis,h1x_,"L1_DoubleJetC112", nPileup) )
+      {
+         h1_["L1_DoubleJetC112"] -> Fill(nPileup);
+      }
+      
       if ( L1SingleMu3(analysis) )
       {
          h1_["L1_SingleMu3"] -> Fill(nPileup);
       }
       
-      if ( L1DoubleJet100Eta2p3(analysis) )
+      if ( L1DoubleJet100Eta2p4(analysis) )
       {
-         h1_["L1_DoubleJetC100Eta2p3"] -> Fill(nPileup);
+         h1_["L1_DoubleJetC100Eta2p4"] -> Fill(nPileup);
       }
       
       if ( L1DoubleJet100Eta2p3_dEtaMax1p6(analysis) )
       {
          h1_["L1_DoubleJetC100Eta2p3_dEtaMax1p6"] -> Fill(nPileup);
+      }
+      
+      if ( L1DoubleJet112Eta2p3_dEtaMax1p6(analysis) )
+      {
+         h1_["L1_DoubleJetC112Eta2p3_dEtaMax1p6"] -> Fill(nPileup);
+      }
+      
+      if ( L1DoubleJet100Eta2p3_dEtaMax1p6_NotIn112(analysis) )
+      {
+         h1_["L1_DoubleJetC100Eta2p3_dEtaMax1p6_NotIn112"] -> Fill(nPileup);
       }
       
       if ( LowMassAllHad(analysis) )
@@ -194,6 +246,10 @@ int main(int argc, char * argv[])
          h1_["HLT_LowMassAllHad2017"] -> Fill(nPileup);
       }
    }
+   
+   // number of zerobias events
+   TVectorD nZB(1);
+   nZB[0] = h1_["ZeroBias"] -> GetEntries();
    
    TFile * f_out = new TFile(Form("mssmhbb_triggers_%s.root",basename_.c_str()),"RECREATE");
    for ( auto & h : h1_ )
@@ -219,6 +275,9 @@ int main(int argc, char * argv[])
       h.second->Write();
    }
 
+   xsection.Write("xsection");
+   nZB.Write("nZeroBias");
+   
    f_dist -> Close();   
    
 //    
