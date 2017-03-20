@@ -59,7 +59,8 @@ bool L1Mu10DiJet32(Analysis & analysis )
       {
          TriggerObject mu = l1mu3->at(m);
          if ( mu.pt() < 10. || fabs(mu.eta()) > 2.3 ) continue;
-         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
+         if ( jet.p4().DeltaR(mu.p4()) > 0.4 ) continue;
+//         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
          l1mu.push_back(mu);
       }
    }
@@ -103,7 +104,8 @@ bool L1Mu12DiJet32(Analysis & analysis )
       {
          TriggerObject mu = l1mu3->at(m);
          if ( mu.pt() < 12. || fabs(mu.eta()) > 2.3 ) continue;
-         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
+         if ( jet.p4().DeltaR(mu.p4()) > 0.4 ) continue;
+//         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
          l1mu.push_back(mu);
       }
    }
@@ -147,7 +149,8 @@ bool L1Mu10DiJet40(Analysis & analysis )
       {
          TriggerObject mu = l1mu3->at(m);
          if ( mu.pt() < 10. || fabs(mu.eta()) > 2.3 ) continue;
-         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
+         if ( jet.p4().DeltaR(mu.p4()) > 0.4 ) continue;
+//         if ( fabs(jet.eta()-mu.eta()) > 0.4 || jet.p4().DeltaPhi(mu.p4()) > 0.4 ) continue;
          l1mu.push_back(mu);
       }
    }
