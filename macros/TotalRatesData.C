@@ -1,12 +1,17 @@
 int TotalRatesData(const std::string & trigger)
 {
-   double zbRate = 24750000;
+   int nBX = 2544;
+//   nBX = 2208;
+   double nbScale = double(nBX)/2208.;
+   double zbRate = 24750000 * nbScale;
+   
+   const char * lumitype = "offlumi";
    
    std::vector<TFile *> f;
    std::vector<TGraphAsymmErrors *> g_eff;
    std::vector<TGraphAsymmErrors *> g_rate;
    
-   f.push_back(new TFile("../test/mssmhbb_triggers_data_parking_zerobias0.root","old"));
+   f.push_back(new TFile(Form("../test/80x/mssmhbb_triggers_data_parking_zerobias0_%s.root",lumitype),"old"));
   
    std::vector<double> totRate;
    std::vector<double> totRateErrH;
@@ -97,14 +102,14 @@ int TotalRatesData(const std::string & trigger)
    
    g_totRate -> Draw("AP");
    
-   g_totRate -> Fit("pol2","","",5,47);
+//   g_totRate -> Fit("pol2","","",5,47);
    
    f1 -> Draw("same");
    
    
-   c1 -> SaveAs(Form("Rates_Data_%s.png",trigger.c_str()));
+//   c1 -> SaveAs(Form("Rates_Data_%s.png",trigger.c_str()));
    
-   TFile * out = new TFile(Form("data_%s.root",trigger.c_str()),"recreate");
+   TFile * out = new TFile(Form("data_%d_bx_%s_%s.root",nBX,trigger.c_str(),lumitype),"recreate");
    g_totRate -> Write();
    for ( size_t i = 0 ; i < f.size() ; ++i )  // loop over files
    {

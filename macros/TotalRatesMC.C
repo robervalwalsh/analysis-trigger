@@ -1,9 +1,9 @@
 int TotalRatesMC(const std::string & trigger)
 {
-   double nBX = 2200;
+   int nBX = 2544;
    double mBX = 3564;
    double tBX = 24.95E-9;
-   double fBX = (nBX/mBX)/tBX;
+   double fBX = (double(nBX)/mBX)/tBX;
    double sigmaMB = 80.E9; // minimum bias cross section 80 mb
    double myPU = 45;
    
@@ -12,14 +12,14 @@ int TotalRatesMC(const std::string & trigger)
    std::vector<TGraphAsymmErrors *> g_eff;
    std::vector<TGraphAsymmErrors *> g_rate;
    
-//    f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_15to30.root","old"));
-    f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_30to50.root","old"));
-    f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_50to80.root","old"));
-   f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_80to120.root","old"));
-   f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_120to170.root","old"));
-   f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_170to300.root","old"));
-   f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_300to470.root","old"));
-   f.push_back(new TFile("../test/mssmhbb_triggers_QCD_Pt_470to600.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_15to30.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_30to50.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_50to80.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_80to120.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_120to170.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_170to300.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_300to470.root","old"));
+   f.push_back(new TFile("../test/80x/mssmhbb_triggers_QCD_Pt_470to600.root","old"));
     
    
    std::vector<double> totRate;
@@ -32,6 +32,9 @@ int TotalRatesMC(const std::string & trigger)
    {
       TH1F * h_total    = (TH1F*) f[i]->Get("h_nZeroBias");
       TH1F * h_selected = (TH1F*) f[i]->Get(Form("h_n%s",trigger.c_str()));
+      
+//       h_total -> SetBinContent(24,0);
+//       h_selected -> SetBinContent(24,0);
       
       const char * sampleName = ((TNamed*) f[i] -> Get("SampleName"))->GetTitle();
       double xsection = (*((TVectorD*) f[i] -> Get("xsection")))[0];
@@ -111,9 +114,9 @@ int TotalRatesMC(const std::string & trigger)
    
    g_totRate -> Draw("AP");
    
-   c1 -> SaveAs(Form("Rates_%s.png",trigger.c_str()));
+//   c1 -> SaveAs(Form("Rates_%s.png",trigger.c_str()));
    
-   TFile * out = new TFile(Form("%s.root",trigger.c_str()),"recreate");
+   TFile * out = new TFile(Form("qcd_%d_bx_%s.root",nBX,trigger.c_str()),"recreate");
    g_totRate -> Write();
    for ( size_t i = 0 ; i < f.size() ; ++i )  // loop over files
    {
