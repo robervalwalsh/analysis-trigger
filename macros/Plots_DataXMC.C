@@ -1,7 +1,9 @@
 void Plots_DataXMC()
 {
+   int version = 0;
+   
    int nbx=2544;
-   const char * trg = "L1_Mu12_DiJet32";
+   const char * trg = "L1_Mu10_DiJet32";
    
    TFile * f1 = new TFile(Form("qcd_%d_bx_%s.root",nbx,trg),"old");
    TFile * f2 = new TFile(Form("data_%d_bx_%s_offlumi.root",nbx,trg),"old");
@@ -13,7 +15,7 @@ void Plots_DataXMC()
    g2 -> SetLineColor(kRed);
    
    float minFit = 20;
-   if ( std::string(trg) == "L1_DoubleJetC100" || std::string(trg) == "L1_DoubleJetC100Eta2p4" || std::string(trg) == "L1_Mu10_DiJet40" ) minFit = 0;
+   if ( std::string(trg) == "L1_DoubleJetC100" || std::string(trg) == "L1_DoubleJetC100Eta2p4" || std::string(trg) == "L1_Mu10_DiJet40" || std::string(trg) == "L1_Mu10_DiJet32" ) minFit = 0;
    
    TCanvas * c1 = new TCanvas("c1","", 700,600);
    c1->SetLeftMargin(0.15);
@@ -30,13 +32,16 @@ void Plots_DataXMC()
    
    mg -> SetTitle(Form("%s",trg));
    if ( std::string(trg) == "L1_Mu10_DiJet32" )
-      mg -> SetTitle("L1_Mu10_dEtaMax0p4_dPhiMax0p4_DoubleJet32_dEtaMax1p6");  
+      mg -> SetTitle("L1_Mu10_dRMax0p4_DoubleJet32_dEtaMax1p6");  
    if ( std::string(trg) == "L1_Mu12_DiJet32" )
-      mg -> SetTitle("L1_Mu12_dEtaMax0p4_dPhiMax0p4_DoubleJet32_dEtaMax1p6");  
+      mg -> SetTitle("L1_Mu12_dRMax0p4_DoubleJet32_dEtaMax1p6");  
    if ( std::string(trg) == "L1_Mu10_DiJet40" )
-      mg -> SetTitle("L1_Mu10_dEtaMax0p4_dPhiMax0p4_DoubleJet40_dEtaMax1p6");  
+      mg -> SetTitle("L1_Mu10_dRMax0p4_DoubleJet40_dEtaMax1p6");  
    std::string gtitle = std::string(mg->GetTitle());
-   mg -> SetTitle("CMS Work in Progress");
+   if ( version == 1 )
+   {
+      mg -> SetTitle("CMS Work in Progress");
+   }
    mg -> Add(g1);
    mg -> Add(g2);
    
@@ -53,11 +58,20 @@ void Plots_DataXMC()
    
    TLegend * leg = new TLegend(0.15,0.65,0.9,0.9); 
    leg->SetTextSize(0.031);
-   leg->SetHeader(gtitle.c_str());  
-   leg->AddEntry(g2,"pp 13 TeV collisions data","p");
-   leg->AddEntry(pol2_2,"Pol2 fit to pp 13 TeV collisions data","l");
-   leg->AddEntry(g1,"QCD Monte Carlo pp 13 TeV","p");
-   leg->AddEntry(pol2_1,"Pol2 fit to QCD Monte Carlo pp 13 TeV","l");
+   if ( version == 0 )
+   {
+      leg->SetY1(0.8);
+      leg->AddEntry(g1,"QCD (pol2 fit)","lp");
+      leg->AddEntry(g2,"Data (pol2 fit)","lp");
+   }
+   if ( version == 1 )
+   {
+      leg->SetHeader(gtitle.c_str());
+      leg->AddEntry(g2,"pp 13 TeV collisions data","p");
+      leg->AddEntry(pol2_2,"Pol2 fit to pp 13 TeV collisions data","l");
+      leg->AddEntry(g1,"QCD Monte Carlo pp 13 TeV","p");
+      leg->AddEntry(pol2_1,"Pol2 fit to QCD Monte Carlo pp 13 TeV","l");
+   }
    
    
    leg -> Draw();
@@ -76,6 +90,6 @@ void Plots_DataXMC()
 //    
    gPad->Modified();
    
-  c1 -> SaveAs(Form("%s_DataXMC_%d_bx.png",trg,nbx));  
+  c1 -> SaveAs(Form("%s_DataXMC_%d_bx_v%d.png",trg,nbx,version));  
  
 }
