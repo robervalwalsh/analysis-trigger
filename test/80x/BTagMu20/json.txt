@@ -1,1 +1,1 @@
-../info/json_processed_btagmu20.txt
+../metadata/json_processed_btagmu20.txt
