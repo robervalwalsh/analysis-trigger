@@ -74,6 +74,7 @@ int main(int argc, char * argv[])
    triggers_.push_back("BTagMuDijet40Mu12BTagCSV092Mu5NewL1");
    triggers_.push_back("BTagMuDijet40Mu12BTagCSV094Mu5NewL1");
    triggers_.push_back("BTagMuDijet50&40Mu12BTagCSV084Mu5NewL1");
+   triggers_.push_back("BTagMuDijet40Eta2p0Mu12BTagCSV084Mu5NewL1");
    
    for ( size_t i = 0 ; i < triggers_.size(); ++i )
    {
@@ -229,6 +230,13 @@ int main(int argc, char * argv[])
                   if ( jet.pt() < 40. || fabs(jet.eta()) > 2.3 ) continue;
                   hltpfjet40.push_back(jet);
                }
+               std::vector<TriggerObject> hltpfjet40eta2p0;
+               for ( int j = 0; j < hlt_2pfjet20->size() ; ++j )
+               {
+                  TriggerObject jet = hlt_2pfjet20->at(j);
+                  if ( jet.pt() < 40. || fabs(jet.eta()) > 2.0 ) continue;
+                  hltpfjet40eta2p0.push_back(jet);
+               }
                std::vector<TriggerObject> hltpfjet50;
                for ( int j = 0; j < hlt_2pfjet20->size() ; ++j )
                {
@@ -265,6 +273,11 @@ int main(int argc, char * argv[])
                      {
                        h1_["BTagMuDijet50&40Mu12BTagCSV084Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
                        h1_["BTagMuDijet50&40Mu12BTagCSV084Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
+                     }
+                     if ( hltpfjet40eta2p0.size() >= 2 )
+                     {
+                       h1_["BTagMuDijet40Eta2p0Mu12BTagCSV084Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
+                       h1_["BTagMuDijet40Eta2p0Mu12BTagCSV084Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
                      }
                   }
                   if ( btag088jets.size() >= 2 )
