@@ -52,6 +52,7 @@ int main(int argc, char * argv[])
 {
    TH1::SetDefaultSumw2();  // proper treatment of errors when scaling histograms
    
+   xsections_ = CrossSections();
    
    isData_ = false;
    // Input files list
@@ -59,11 +60,17 @@ int main(int argc, char * argv[])
    if ( argc == 2 )
    {
       inputList_ = std::string(argv[1]);
-      basename_ =  std::string(boost::filesystem::basename(inputList_));
-      std::cout << basename_ << std::endl;
-      isData_ = (basename_.find("data") != std::string::npos);
    }
    
+   basename_ =  std::string(boost::filesystem::basename(inputList_));
+   std::cout << basename_ << std::endl;
+   TNamed sampleName("SampleName",basename_.c_str());
+   std::string basename_orginal = basename_;
+   isData_ = (basename_.find("data") != std::string::npos);
+   if ( (basename_.find("_x") != std::string::npos) )
+   {
+      basename_.erase(basename_.length()-5,5);
+   }
    
    std::string  refTrigger = "";
    if ( isData_ )
@@ -76,6 +83,8 @@ int main(int argc, char * argv[])
 
    xsections_ = CrossSections();
    
+   triggers_.push_back("ZeroBias");
+   
    triggers_.push_back("HLT_2CaloJets30_Muon12_2CaloBTagCSV084_2PFJets40");
    triggers_.push_back("HLT_2CaloJets30_Muon12_2CaloBTagCSV088_2PFJets40");
    triggers_.push_back("HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40");
@@ -86,6 +95,9 @@ int main(int argc, char * argv[])
    triggers_.push_back("HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets50e40_Eta2p1_dEta1p5");   // v4
    
    triggers_.push_back("HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100");
+   triggers_.push_back("HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100");
+   triggers_.push_back("HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1");
+   triggers_.push_back("HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_dEta1p5");
 
    for ( size_t i = 0 ; i < triggers_.size(); ++i )
    {
@@ -99,6 +111,10 @@ int main(int argc, char * argv[])
    Analysis analysis(inputList_,"MssmHbbTrigger/Events/EventInfo");
    
    // Physics Objects Collections
+   // Vertices
+   analysis.addTree<Vertex> ("FastPV","MssmHbbTrigger/Events/hltFastPrimaryVertex");
+   analysis.addTree<Vertex> ("FastPVPixel","MssmHbbTrigger/Events/hltFastPVPixelVertices");
+   
    // Jets
    analysis.addTree<Jet> ("L1Jets","MssmHbbTrigger/Events/l1tJets");
    analysis.addTree<Jet> ("CaloJets","MssmHbbTrigger/Events/hltAK4CaloJetsCorrectedIDPassed");
@@ -117,13 +133,13 @@ int main(int argc, char * argv[])
       analysis.triggerResults("MssmHbbTrigger/Events/TriggerResults");
    
    // Get cross section
-//    double crossSection  = -1.;
-//    if ( ! isData_ )
-//    {
-//       analysis.crossSections("MssmHbbTrigger/Metadata/CrossSections");
-//       crossSection = analysis.crossSection();
-//       crossSection = xsections_[basename_];
-//    }
+   double crossSection  = -1.;
+   if ( ! isData_ )
+   {
+      analysis.crossSections("MssmHbbTrigger/Metadata/CrossSections");
+      crossSection = analysis.crossSection();
+      crossSection = xsections_[basename_];
+   }
    
    // DATA only
    if ( isData_ )
@@ -187,20 +203,35 @@ int main(int argc, char * argv[])
             if ( ls >= 209 && ls <= 233 ) nPileup = 45;
          }
          
-//         std::cout << run << "   " << ls << "   " << ncoll << std::endl;
-         if ( ncollFix > 0 && ncoll != ncollFix ) continue;
+         if ( ncollFix > 0 && ncoll != ncollFix ) continue;  // I think that's for tests only, check
+         
+         // Lumi sections counter (for data)
          if ( ! lsXpu_[run][ls] )
          {
-//            std::cout << run << " , " << ls << "  ps = " << prescale << " pile up = " << nPileup <<  std::endl;
             lsXpu_[run][ls] = true;
             h1_["Lumis"] -> Fill(nPileup);
          }
       }
       else
       {
-         nPileup = (float)analysis.nTruePileup();
+         nPileup = (float)analysis.nTruePileup(); // from eventinfo MC
          ncoll = 1;
       }
+      
+      
+      // ZEROBIAS
+      h1_["ZeroBias"] -> Fill(nPileup, 1./ncoll);   
+      h1_["ZeroBias_psw"] -> Fill(nPileup, prescale/ncoll);   
+      
+      
+      // primary vertex
+      std::shared_ptr< Collection<Vertex> > fastPVs = analysis.collection<Vertex>("FastPV");
+      std::shared_ptr< Collection<Vertex> > fastPVsPixel = analysis.collection<Vertex>("FastPVPixel");
+      if ( fastPVs -> size() < 1 || fastPVsPixel -> size() < 1 ) continue;
+      Vertex fastpv = fastPVs->at(0);
+      if ( !( ! fastpv.fake() && fastpv.ndof() > 0 && fabs(fastpv.z()) <= 25 && fastpv.rho() <= 2 ) ) continue;
+      Vertex fastpvpix = fastPVsPixel->at(0);
+      if ( !( ! fastpvpix.fake() && fastpvpix.ndof() > 0 && fabs(fastpvpix.z()) <= 25 && fastpvpix.rho() <= 2 ) ) continue;
       
       // L1 Jets
       std::shared_ptr< Collection<Jet> > l1jets = analysis.collection<Jet>("L1Jets");
@@ -286,18 +317,23 @@ int main(int argc, char * argv[])
       std::vector<Jet>  calojets30Selector;
       std::vector<Jet>  calojets30eta2p1Selector;
       std::vector<Jet>  calojets100eta2p3;
+      std::vector<Jet>  calojets100eta2p1;
       std::vector<Jet>  calojets80Selector;
+      std::vector<Jet>  calojets80eta2p1Selector;
       for ( int j = 0 ; j < calojets->size() ; ++j )
       {
          Jet jet = calojets->at(j);
          if ( jet.pt() >= 100 && fabs(jet.eta()) <= 2.3 ) calojets100eta2p3.push_back(jet);
+         if ( jet.pt() >= 100 && fabs(jet.eta()) <= 2.1 ) calojets100eta2p1.push_back(jet);
          if ( jet.pt() >= 30  && fabs(jet.eta()) <= 2.3 ) calojets30eta2p3.push_back(jet);
          if ( jet.pt() >= 30  && fabs(jet.eta()) <= 2.1 ) calojets30eta2p1.push_back(jet);
          if ( jet.pt() >= 30  && fabs(jet.eta()) <= 2.4 ) calojets30Selector.push_back(jet);
          if ( jet.pt() >= 30  && fabs(jet.eta()) <= 2.1 ) calojets30eta2p1Selector.push_back(jet);
          if ( jet.pt() >= 80  && fabs(jet.eta()) <= 2.4 ) calojets80Selector.push_back(jet);
+         if ( jet.pt() >= 80  && fabs(jet.eta()) <= 2.1 ) calojets80eta2p1Selector.push_back(jet);
       }
       std::vector<Jet> pfjets100eta2p3;
+      std::vector<Jet> pfjets100eta2p1;
       std::vector<Jet> pfjets40eta2p3;
       std::vector<Jet> pfjets50eta2p3;
       std::vector<Jet> pfjets40eta2p1;
@@ -307,6 +343,7 @@ int main(int argc, char * argv[])
       {
          Jet jet = pfjets->at(j);
          if ( jet.pt() >= 100 && fabs(jet.eta()) <= 2.3 ) pfjets100eta2p3.push_back(jet);
+         if ( jet.pt() >= 100 && fabs(jet.eta()) <= 2.1 ) pfjets100eta2p1.push_back(jet);
          if ( jet.pt() >= 40  && fabs(jet.eta()) <= 2.3 ) pfjets40eta2p3.push_back(jet);
          if ( jet.pt() >= 50  && fabs(jet.eta()) <= 2.3 ) pfjets50eta2p3.push_back(jet);
          if ( jet.pt() >= 40  && fabs(jet.eta()) <= 2.1 ) pfjets40eta2p1.push_back(jet);
@@ -340,6 +377,8 @@ int main(int argc, char * argv[])
       std::vector<JetTag>  jetstags30eta2p1wp092;
       
       std::vector<JetTag>  jetstags100wp084;
+      std::vector<JetTag>  jetstags100wp092;
+      std::vector<JetTag>  jetstags100eta2p1wp092;
 
       for ( int jt = 0; jt < jetstags->size() ; ++jt )
       {
@@ -355,6 +394,8 @@ int main(int argc, char * argv[])
          if ( jet.pt() >= 100 )
          {
             if ( jet.btag() >= 0.84 ) jetstags100wp084.push_back(jet);
+            if ( jet.btag() >= 0.92 ) jetstags100wp092.push_back(jet);
+            if ( jet.btag() >= 0.92 && fabs(jet.btag()) <= 2.1 ) jetstags100eta2p1wp092.push_back(jet);
          }
       }
       
@@ -494,6 +535,9 @@ int main(int argc, char * argv[])
       
       // HLT Path - All had
       bool hltAllhad084 = false;
+      bool hltAllhad092 = false;
+      bool hltAllhad092v3 = false;
+      bool hltAllhad092v4 = false;
       if ( l1Allhad && calojets100eta2p3.size() >= 2 && pfjets100eta2p3.size() >= 2 )
       {
          // delta eta
@@ -510,144 +554,73 @@ int main(int argc, char * argv[])
          }
          
          if ( jetstags100wp084.size() >= 2 && deltaEta1p6 )    hltAllhad084 = true;
+         if ( jetstags100wp092.size() >= 2 && deltaEta1p6 )    hltAllhad092 = true;
       }
+      // $$$$$$$$$$$$$$
+      if ( l1Allhad && calojets100eta2p1.size() >= 2 && pfjets100eta2p1.size() >= 2  )
+      {
+         // delta eta
+         bool deltaEta1p6 = false;
+         bool deltaEta1p5 = false;
+         for ( int j1 = 0; j1 < int(pfjets100eta2p1.size()-1); ++j1 )
+         {
+            Jet jet1 = pfjets100eta2p1.at(j1);
+            for ( int j2 = j1+1; j2 < int(pfjets100eta2p1.size()); ++j2 )
+            {
+               Jet jet2 = pfjets100eta2p1.at(j2);
+               double deltaEta = fabs(jet1.eta() - jet2.eta());
+               if ( deltaEta <= 1.6 ) deltaEta1p6 = true;
+               if ( deltaEta <= 1.5 ) deltaEta1p5 = true;
+            }
+         }
+         if ( jetstags100eta2p1wp092.size() >= 2 && deltaEta1p6 )    hltAllhad092v3 = true;
+         if ( jetstags100eta2p1wp092.size() >= 2 && deltaEta1p5 )    hltAllhad092v4 = true;
+      }
+      
       
       if ( hltAllhad084 )
       {
          h1_["HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100"] -> Fill(nPileup, 1./ncoll);   
          h1_["HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100_psw"] -> Fill(nPileup, prescale/ncoll);   
       }
-//       
-//       std::shared_ptr< Collection<JetTag> > jetstags;
-//       
-//       if ( refTrigger != "HLT_BTagMu_DiJet20_Mu5_v" ) 
-//       {
-//          // btagging - up to 6 jets with pt > 30 GeV
-//          jetstags = analysis.collection<JetTag>("JetsTags");
-//          if ( analysis.triggerResult(refTrigger) && ncoll > 0 )
-//          {
-//             if (  L1Mu10DiJet32(analysis) && analysis.triggerResult("HLT_Mu5_v") )
-//             {
-//                // select muons with pt > 10 eta < 2.3
-//                auto hlt_mu5 = analysis.collection<TriggerObject>("hltL3fL1sMu3L1f0L2f3QL3Filtered5Q");
-//                std::vector<TriggerObject> hltmu12;
-//                for ( int m = 0; m < hlt_mu5->size() ; ++m )
-//                {
-//                   TriggerObject mu = hlt_mu5->at(m);
-//                   if ( mu.pt() < 12. || fabs(mu.eta()) > 2.3 ) continue;
-//                   hltmu12.push_back(mu);
-//                }
-//                auto hlt_2pfjet20 = analysis.collection<TriggerObject>("hltDoublePFBJet20");
-//                std::vector<TriggerObject> hltpfjet40;
-//                for ( int j = 0; j < hlt_2pfjet20->size() ; ++j )
-//                {
-//                   TriggerObject jet = hlt_2pfjet20->at(j);
-//                   if ( jet.pt() < 40. || fabs(jet.eta()) > 2.3 ) continue;
-//                   hltpfjet40.push_back(jet);
-//                }
-//                std::vector<TriggerObject> hltpfjet40eta2p0;
-//                for ( int j = 0; j < hlt_2pfjet20->size() ; ++j )
-//                {
-//                   TriggerObject jet = hlt_2pfjet20->at(j);
-//                   if ( jet.pt() < 40. || fabs(jet.eta()) > 2.0 ) continue;
-//                   hltpfjet40eta2p0.push_back(jet);
-//                }
-//                std::vector<TriggerObject> hltpfjet50;
-//                for ( int j = 0; j < hlt_2pfjet20->size() ; ++j )
-//                {
-//                   TriggerObject jet = hlt_2pfjet20->at(j);
-//                   if ( jet.pt() < 50. || fabs(jet.eta()) > 2.3 ) continue;
-//                   hltpfjet50.push_back(jet);
-//                }
-//                
-//                
-//                std::vector<JetTag> btag084jets;
-//                std::vector<JetTag> btag088jets;
-//                std::vector<JetTag> btag092jets;
-//                std::vector<JetTag> btag094jets;
-//                
-// //               std::cout <<  "oioi   " << jetstags << "   "  << jetstags->size() << std::endl;
-//                for ( int j = 0; j < jetstags->size() ; ++j )
-//                {
-//                   if ( j > 5 ) break;
-//                   JetTag jet = jetstags->at(j);
-//                   if (jet.btag() >= 0.84 )  btag084jets.push_back(jet);
-//                   if (jet.btag() >= 0.88 )  btag088jets.push_back(jet);
-//                   if (jet.btag() >= 0.92 )  btag092jets.push_back(jet);
-//                   if (jet.btag() >= 0.94 )  btag094jets.push_back(jet);
-//                }
-//                if ( hltmu12.size() >= 1 && hltpfjet40.size() >= 2 )
-//                {
-//                   h1_["BTagMuDijet40Mu12BTagCSV000Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                   h1_["BTagMuDijet40Mu12BTagCSV000Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                   if ( btag084jets.size() >= 2 )
-//                   {
-//                      h1_["BTagMuDijet40Mu12BTagCSV084Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                      h1_["BTagMuDijet40Mu12BTagCSV084Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                      if ( hltpfjet50.size() >= 1 )
-//                      {
-//                        h1_["BTagMuDijet50&40Mu12BTagCSV084Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                        h1_["BTagMuDijet50&40Mu12BTagCSV084Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                      }
-//                      if ( hltpfjet40eta2p0.size() >= 2 )
-//                      {
-//                        h1_["BTagMuDijet40Eta2p0Mu12BTagCSV084Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                        h1_["BTagMuDijet40Eta2p0Mu12BTagCSV084Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                      }
-//                   }
-//                   if ( btag088jets.size() >= 2 )
-//                   {
-//                      h1_["BTagMuDijet40Mu12BTagCSV088Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                      h1_["BTagMuDijet40Mu12BTagCSV088Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                   }
-//                   if ( btag092jets.size() >= 2 )
-//                   {
-//                      h1_["BTagMuDijet40Mu12BTagCSV092Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                      h1_["BTagMuDijet40Mu12BTagCSV092Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                   }
-//                   if ( btag094jets.size() >= 2 )
-//                   {
-//                      h1_["BTagMuDijet40Mu12BTagCSV094Mu5NewL1"] -> Fill(nPileup, 1./ncoll);
-//                      h1_["BTagMuDijet40Mu12BTagCSV094Mu5NewL1_psw"] -> Fill(nPileup, prescale/ncoll);
-//                   }
-//                }
-//             }
-//          }
-//          
-//       }
-//       
-//       // hltPath0 - reference trigger
-//       if ( analysis.triggerResult("HLT_BTagMu_DiJet20_Mu5_v") && ncoll > 0 ) 
-//       {
-//          h1_["BTagMu20"] -> Fill(nPileup, 1./ncoll);
-//          h1_["BTagMu20_psw"] -> Fill(nPileup, prescale/ncoll);
-//       }
-//       
-//       if ( analysis.triggerResult(refTrigger) && ncoll > 0 ) 
-//       {
-//          h1_["BTagMu20BTagCSV000"] -> Fill(nPileup, 1./ncoll);
-//          h1_["BTagMu20BTagCSV000_psw"] -> Fill(nPileup, prescale/ncoll);
-//       }
+      if ( hltAllhad092 )
+      {
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100"] -> Fill(nPileup, 1./ncoll);   
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw"] -> Fill(nPileup, prescale/ncoll);   
+      }
+      if ( hltAllhad092v3 )
+      {
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1"] -> Fill(nPileup, 1./ncoll);   
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_psw"] -> Fill(nPileup, prescale/ncoll);   
+      }
+      if ( hltAllhad092v4 )
+      {
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_dEta1p5"] -> Fill(nPileup, 1./ncoll);   
+         h1_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_dEta1p5_psw"] -> Fill(nPileup, prescale/ncoll);   
+      }
    }
    
 //    // number of zerobias events
-//    TVectorD nZB(1);
-//    nZB[0] = h1_["ZeroBias"] -> GetEntries();
+   TVectorD nZB(1);
+   if ( ! isData_ )
+      nZB[0] = h1_["ZeroBias"] -> GetEntries();
+   else
+      nZB[0] = -1;
 //    
-   TFile * f_out = new TFile(Form("mssmhbb_triggers_%s.root",basename_.c_str()),"RECREATE");
+   TFile * f_out = new TFile(Form("mssmhbb_triggers_%s.root",basename_orginal.c_str()),"RECREATE");
    for ( auto & h : h1_ )
    {
       if ( ! isData_ && h.first == "Lumis" ) continue;
       std::cout << h.first << std::endl;
       h.second->Write();
    }
-//    
-//    TVectorD xsection(1);
-//    xsection[0] = crossSection;
-//    xsection.Write("xsection");
-//    
-//    TNamed sampleName("SampleName",basename_.c_str());
-//    sampleName.Write();
+   
+   TVectorD xsection(1);
+   xsection[0] = crossSection;
+   std::cout << "Cross section = " << crossSection << std::endl;
+   xsection.Write("xsection");
+   
+   sampleName.Write();
 //    
    f_out -> Close();
 //    
