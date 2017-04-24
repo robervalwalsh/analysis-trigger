@@ -391,7 +391,7 @@ int main(int argc, char * argv[])
             if ( jet.btag() >= 0.94 ) jetstags30wp094.push_back(jet);
             if ( jet.btag() >= 0.92 && fabs(jet.btag()) <= 2.1 ) jetstags30eta2p1wp092.push_back(jet);
          }
-         if ( jet.pt() >= 100 )
+         if ( jet.pt() >= 80 )
          {
             if ( jet.btag() >= 0.84 ) jetstags100wp084.push_back(jet);
             if ( jet.btag() >= 0.92 ) jetstags100wp092.push_back(jet);
