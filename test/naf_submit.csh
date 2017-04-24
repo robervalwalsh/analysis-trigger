@@ -20,9 +20,10 @@ split.csh $nSplit $txtFile
 set files = `/bin/ls *_x???.txt` 
 foreach file ( $files )
    set sampleName = `basename $file .txt`
-   echo MssmHbbHltPaths $file > qcdRates
-   chmod u+x qcdRates
-   $HOME/bin/qsub.sh qcdRates $sampleName
+   set exeName = "qcdRates_"$sampleName
+   echo MssmHbbHltPaths $file > $exeName
+   chmod u+x $exeName
+   $HOME/bin/qsub.sh $exeName $sampleName
    sleep 5
 end
 exit
