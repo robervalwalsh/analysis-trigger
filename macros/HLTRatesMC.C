@@ -1,6 +1,22 @@
 int HLTRatesMC(const std::string & trigger)
+//int HLTRatesMC()
 {
-   int nBX = 2544;
+
+//   std::string trigger;
+   
+   // All hadronic
+//   trigger = "HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100";
+//   trigger = "HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100";
+//   trigger = "HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1";
+//   trigger = "HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_dEta1p5";
+   
+//   trigger = "HLT_2CaloJets30_Muon12_2CaloBTagCSV084_2PFJets40";
+//   trigger = "HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40";
+//   trigger = "HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets50e40_Eta2p1";
+//   trigger = "HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets50e40_Eta2p1_dEta1p5";
+
+
+   int nBX = 2600;
    double mBX = 3564;
    double tBX = 24.95E-9;
    double fBX = (double(nBX)/mBX)/tBX;
@@ -11,14 +27,14 @@ int HLTRatesMC(const std::string & trigger)
    std::vector<TGraphAsymmErrors *> g_eff;
    std::vector<TGraphAsymmErrors *> g_rate;
    
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_15to30/mssmhbb_triggers_QCD_Pt_15to30.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_30to50/mssmhbb_triggers_QCD_Pt_30to50.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_50to80/mssmhbb_triggers_QCD_Pt_50to80.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_80to120/mssmhbb_triggers_QCD_Pt_80to120.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_120to170/mssmhbb_triggers_QCD_Pt_120to170.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_170to300/mssmhbb_triggers_QCD_Pt_170to300.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_300to470/mssmhbb_triggers_QCD_Pt_300to470.root","old"));
-   f.push_back(new TFile("../test/80x/QCD/QCD_Pt_470to600/mssmhbb_triggers_QCD_Pt_470to600.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_15to30/mssmhbb_triggers_QCD_Pt_15to30.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_30to50/mssmhbb_triggers_QCD_Pt_30to50.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_50to80/mssmhbb_triggers_QCD_Pt_50to80.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_80to120/mssmhbb_triggers_QCD_Pt_80to120.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_120to170/mssmhbb_triggers_QCD_Pt_120to170.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_170to300/mssmhbb_triggers_QCD_Pt_170to300.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_300to470/mssmhbb_triggers_QCD_Pt_300to470.root","old"));
+   f.push_back(new TFile("../test/90x/QCD/QCD_Pt_470to600/mssmhbb_triggers_QCD_Pt_470to600.root","old"));
     
    std::vector<bool> mask;
    mask.resize(f.size());
@@ -129,7 +145,7 @@ int HLTRatesMC(const std::string & trigger)
    
 //   c1 -> SaveAs(Form("Rates_%s.png",trigger.c_str()));
    
-   TFile * out = new TFile(Form("qcd_%d_bx_%s.root",nBX,trigger.c_str()),"recreate");
+   TFile * out = new TFile(Form("qcd90x_%d_bx_%s.root",nBX,trigger.c_str()),"recreate");
    g_totRate -> Write();
    for ( size_t i = 0 ; i < f.size() ; ++i )  // loop over files
    {
