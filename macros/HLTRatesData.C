@@ -1,10 +1,12 @@
 void HLTRatesData()
 {
-   double nbx = 2500;
-   TFile * inFile = new TFile("../test/80x/BTagMu20/mssmhbb_triggers_data_btagmu20.root","old");
+   double nbx = 2600;
+//   TFile * inFile = new TFile("../test/80x/BTagMu20/mssmhbb_triggers_data_BTagMu20.root","old");
+   TFile * inFile = new TFile("../test/80x/BTagCSV/mssmhbb_triggers_data_BTagCSV.root","old");
 //   TFile * inFile = new TFile("../test/80x/HighPU/mssmhbb_triggers_data_zerobiasbt.root","old");
    TH1F * hLumis   = (TH1F*) inFile -> Get("Lumis");
-   TH1F * hsemilep = (TH1F*) inFile -> Get("h_nHLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets50e40_Eta2p1_dEta1p5_psw");
+//   TH1F * hpath = (TH1F*) inFile -> Get("h_nHLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets50e40_Eta2p1_dEta1p5_psw");
+   TH1F * hpath = (TH1F*) inFile -> Get("h_nHLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_Eta2p1_dEta1p5_psw");
    
    double pileup[100];
    double pileupErr[100];
@@ -20,8 +22,8 @@ void HLTRatesData()
       pileup[n] = pu;
       pileupErr[n] = 0;
       double nlumi = hLumis->GetBinContent(i+1);
-      double nevts = hsemilep->GetBinContent(i+1);
-      double nevtsErr = hsemilep->GetBinError(i+1);
+      double nevts = hpath->GetBinContent(i+1);
+      double nevtsErr = hpath->GetBinError(i+1);
       rate[n] = nevts*nbx/nlumi/23.31;
       rateErr[n]= nevtsErr*nbx/nlumi/23.31;
 //      if ( nlumi == 0 || pu > 42 )  break;

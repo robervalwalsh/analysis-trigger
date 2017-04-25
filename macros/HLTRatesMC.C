@@ -1,6 +1,6 @@
 int HLTRatesMC(const std::string & trigger)
 {
-   int nBX = 2544;
+   int nBX = 2600;
    double mBX = 3564;
    double tBX = 24.95E-9;
    double fBX = (double(nBX)/mBX)/tBX;
