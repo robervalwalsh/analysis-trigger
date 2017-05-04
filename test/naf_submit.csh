@@ -35,11 +35,11 @@ foreach file ( $files )
       cp -p ../lumispath.csv $sampleName
    endif
    cd $sampleName
-   set exeName = "qcdRates_"$sampleName
+   set exeName = "rates_"$sampleName
    echo MssmHbbHltPaths $file > $exeName
    chmod u+x $exeName
    $HOME/bin/qsub.sh $exeName $sampleName
-   sleep 5
+#   sleep 5
    cd -
 end
 exit
