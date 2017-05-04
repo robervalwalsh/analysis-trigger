@@ -21,18 +21,23 @@ set files = `/bin/ls *_x???.txt`
 if ( -d jobs ) then
    rm -fR jobs
 endif
-mkdir jobs
+set newdir = /nfs/dust/cms/user/walsh/naf/jobs/jobs.$$
+#mkdir jobs
+mkdir $newdir
+ln -s $newdir jobs
 mv *_x???.txt jobs
+set thisdir = `pwd`
+echo $thisdir
 cd jobs
 foreach file ( $files )
    set sampleName = `basename $file .txt`
    mkdir $sampleName
    mv $file $sampleName
-   if ( -e ../json.txt ) then
-      cp -p ../json.txt $sampleName
-      cp -p ../collisions.csv $sampleName
-      cp -p ../lumis.csv $sampleName
-      cp -p ../lumispath.csv $sampleName
+   if ( -e $thisdir/json.txt ) then
+      cp -p $thisdir/json.txt $sampleName
+      cp -p $thisdir/collisions.csv $sampleName
+      cp -p $thisdir/lumis.csv $sampleName
+      cp -p $thisdir/lumispath.csv $sampleName
    endif
    cd $sampleName
    set exeName = "rates_"$sampleName
