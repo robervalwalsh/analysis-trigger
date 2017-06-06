@@ -8,14 +8,14 @@ void Plots_3x()
 //   TFile * f4 = new TFile("qcd90x_2600_bx_HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw.root","old");
    
 // data
-    TFile * f1 = new TFile("data_2600_bx_HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw.root","old");    // All had
-//   TFile * f1 = new TFile("data_2600_bx_HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40_psw.root","old");  // Semilep
+    TFile * f1 = new TFile("v4/data2016_2600_bx_HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100_psw.root","old");    // All had
+//   TFile * f1 = new TFile("data2016_2600_bx_HLT_1CaloJets30_Muon12_1PFJets40_psw.root","old");  // Semilep
 // 80X MC
-  TFile * f2 = new TFile("qcd_2600_bx_HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw.root","old");    // All had
-//  TFile * f2 = new TFile("qcd_2600_bx_HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40_psw.root","old"); // Semilep
+  TFile * f2 = new TFile("qcd80x_2600_bx_HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100_psw.root","old");    // All had
+//  TFile * f2 = new TFile("qcd80x_2600_bx_HLT_1CaloJets30_Muon12_1PFJets40_psw.root","old"); // Semilep
 // 83X/90X MC   
-  TFile * f3 = new TFile("qcd90x_2600_bx_HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw.root","old");    // All had
-//  TFile * f3 = new TFile("qcd90x_2600_bx_HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40_psw.root","old"); // Semilep
+  TFile * f3 = new TFile("qcd90x_2600_bx_HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100_psw.root","old");    // All had
+//  TFile * f3 = new TFile("qcd90x_2600_bx_HLT_1CaloJets30_Muon12_1PFJets40_psw.root","old"); // Semilep
    
 
    TGraphAsymmErrors * g1 = (TGraphAsymmErrors*) f1 -> Get("rate_total");
@@ -59,13 +59,13 @@ void Plots_3x()
    TF1 * pol1_2 = new TF1("pol1_2","pol2",minfit2,70);
    pol1_2 -> SetLineColor(kBlue);
    pol1_2 -> SetLineStyle(1);
-   TFitResultPtr fit2 = g2 -> Fit(pol1_2,"S","",minfit2,50);
+//   TFitResultPtr fit2 = g2 -> Fit(pol1_2,"S","",minfit2,50);
    
    
    TF1 * pol1_3 = new TF1("pol1_3","pol1",minfit2,70);
    pol1_3 -> SetLineColor(kRed);
    pol1_3 -> SetLineStyle(1);
-   TFitResultPtr fit3 = g3 -> Fit(pol1_3,"S","",minfit2,maxfit2);
+//   TFitResultPtr fit3 = g3 -> Fit(pol1_3,"S","",minfit2,maxfit2);
    
    TMultiGraph * mg = new TMultiGraph();
    
@@ -78,8 +78,8 @@ void Plots_3x()
    mg -> Draw("ap");
    
    pol1_1 -> Draw("same");
-   pol1_2 -> Draw("same");
-   pol1_3 -> Draw("same");
+//   pol1_2 -> Draw("same");
+//   pol1_3 -> Draw("same");
    
    TLegend * leg = new TLegend(0.15,0.75,0.6,0.9); 
    leg->AddEntry(g1,"Data 2016","pl");
@@ -94,9 +94,15 @@ void Plots_3x()
    mg -> GetYaxis() -> SetTitleOffset(1.3); 
    
    mg -> SetMinimum(0);
-   mg -> SetMaximum(60);
+   mg -> SetMaximum(100);
+//   mg -> SetMaximum(1000);  // control 1
+//   mg -> SetMaximum(200);   // control 2
+//   mg -> SetMaximum(30);    // control 3
+//   mg -> SetMaximum(10);    // control 4
+//   mg -> SetMaximum(15000);    // control 5
+//   mg -> SetMaximum(3000);    // control 6
    gPad->Modified();
    
-   c1 -> SaveAs("rates_allhad.png");
+   c1 -> SaveAs("rates_allhad_bta0p84.png");
    
 }

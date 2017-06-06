@@ -8,6 +8,10 @@ void HLTRatesData(const std::string & trigger, const std::string & file)
 // root -l HLTRatesData.C\(\"HLT_2CaloJets30_Muon12_2CaloBTagCSV092_2PFJets40_psw\",\"../test/80x/BTagMu20/mssmhbb_triggers_data_BTagMu20.root\"\)   
 // root -l HLTRatesData.C\(\"HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100_psw\",\"../test/80x/BTagCSV/mssmhbb_triggers_data_BTagCSV.root\"\) 
 
+//root -l HLTRatesData.C\(\"HLT_2CaloJets30_Muon12_1CaloBTagCSV092_2PFJets350_psw\",\"../test/80x/BTagMu20/mssmhbb_triggers_data_BTagMu20_control_backup_v2.root\"\)
+//root -l HLTRatesData.C\(\"HLT_2CaloJets100_2CaloBTagCSV092_2PFJets130_psw\",\"../test/80x/BTagCSV/mssmhbb_triggers_data_BTagCSV_control_backup_v2.root\"\)
+//root -l HLTRatesData.C\(\"HLT_2CaloJets100_1CaloBTagCSV092_2PFJets350_psw\",\"../test/80x/BTagCSVControl/mssmhbb_triggers_data_BTagCSVControl_control_backup_v2.root\"\)
+
    double nbx = 2600;
    TFile * inFile = new TFile(file.c_str(),"old");
 //   TFile * inFile = new TFile("../test/80x/BTagCSV/mssmhbb_triggers_data_BTagCSV.root","old");
@@ -44,7 +48,7 @@ void HLTRatesData(const std::string & trigger, const std::string & file)
    gRate -> SetMarkerStyle(20);
    gRate -> Draw("AP");
    
-   TFile * out = new TFile(Form("data_%d_bx_%s.root",int(nbx),trigger.c_str()),"recreate");
+   TFile * out = new TFile(Form("data2016_%d_bx_%s.root",int(nbx),trigger.c_str()),"recreate");
    gRate -> Write();
    
    out -> Close();
