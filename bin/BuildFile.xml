@@ -22,10 +22,31 @@
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
 </bin>
 
+<bin   name="MssmHbbHltPaths112" file="MssmHbbHltPaths112.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+
+<bin   name="MssmHbbHltPathsFinal" file="MssmHbbHltPathsFinal.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="MssmHbbHltEff" file="MssmHbbHltEff.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
 <bin   name="SaveHistograms" file="SaveHistograms.cc">
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
 </bin>
 
 <bin   name="TriggerDiagnostics" file="TriggerDiagnostics.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="SimpleAnalysisTrigger" file="SimpleAnalysisTrigger.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="SimpleAnalysisTriggerSL" file="SimpleAnalysisTriggerSL.cc">
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
 </bin>

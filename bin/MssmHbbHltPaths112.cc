@@ -434,6 +434,7 @@ int main(int argc, char * argv[])
       std::vector<Jet> pfjets70;
       std::vector<Jet> pfjets100;
       std::vector<Jet> pfjets110;
+      std::vector<Jet> pfjets112;
       std::vector<Jet> pfjets120;
       std::vector<Jet> pfjets130;
       std::vector<Jet> pfjets140;
@@ -501,9 +502,10 @@ int main(int argc, char * argv[])
 
                   
          if ( jet.pt() >= 100 && fabs(jet.eta()) <= etacut_ ) pfjets100.push_back(jet);
+         if ( jet.pt() >= 112 && fabs(jet.eta()) <= etacut_ ) pfjets112.push_back(jet);
          if ( jet.pt() >= 116 && fabs(jet.eta()) <= etacut_ ) pfjets110.push_back(jet);
          if ( jet.pt() >= 120 && fabs(jet.eta()) <= etacut_ ) pfjets120.push_back(jet);
-         if ( jet.pt() >= 128 && fabs(jet.eta()) <= etacut_ ) pfjets130.push_back(jet);
+         if ( jet.pt() >= 130 && fabs(jet.eta()) <= etacut_ ) pfjets130.push_back(jet);
          if ( jet.pt() >= 140 && fabs(jet.eta()) <= etacut_ ) pfjets140.push_back(jet);
          if ( jet.pt() >= 200 && fabs(jet.eta()) <= etacut_ ) pfjets200.push_back(jet);
          if ( jet.pt() >= 350 && fabs(jet.eta()) <= etacut_ ) pfjets350.push_back(jet);
@@ -539,7 +541,7 @@ int main(int argc, char * argv[])
                      pfjets70deta.push_back(jet2);
                   }
                   // all-hadronic
-                  if ( jet1.pt() >= 100 && jet2.pt() >= 100 ) // avoid repetition
+                  if ( jet1.pt() >= 112 && jet2.pt() >= 112 ) // avoid repetition
                   {
                      pfjets100deta.push_back(jet1);
                      pfjets100deta.push_back(jet2);
@@ -554,7 +556,7 @@ int main(int argc, char * argv[])
                      pfjets120deta.push_back(jet1);
                      pfjets120deta.push_back(jet2);
                   }
-                  if ( jet1.pt() >= 128 && jet2.pt() >= 128 ) // avoid repetition
+                  if ( jet1.pt() >= 130 && jet2.pt() >= 130 ) // avoid repetition
                   {
                      pfjets130deta.push_back(jet1);
                      pfjets130deta.push_back(jet2);
@@ -718,7 +720,7 @@ int main(int argc, char * argv[])
 
       // All hadronic
       trigger_accept_["HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100"]  = ( calojets100.size() >= 2 && bjets100wp084.size() >= 2 && pfjets100.size() >= 2 && pfjets100deta.size() >= 2 );
-      trigger_accept_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100"]  = ( calojets100.size() >= 2 && bjets100wp092.size() >= 2 && pfjets100.size() >= 2 && pfjets100deta.size() >= 2 );
+      trigger_accept_["HLT_2CaloJets100_2CaloBTagCSV092_2PFJets100"]  = ( calojets100.size() >= 2 && bjets100wp092.size() >= 2 && pfjets112.size() >= 2 && pfjets100deta.size() >= 2 );
       // monitor
       trigger_accept_["HLT_2CaloJets100_1CaloBTagCSV092_2PFJets100"] = ( calojets100.size() >= 2 && bjets100wp092.size() >= 1 && pfjets100.size() >= 2 );
       trigger_accept_["HLT_2CaloJets100_1CaloBTagCSV092_2PFJets140"] = ( calojets100.size() >= 2 && bjets100wp092.size() >= 1 && pfjets140.size() >= 2 );
@@ -749,7 +751,7 @@ int main(int argc, char * argv[])
       
 // --------------------      
       // HLT Path - All had
-      if ( trigger_accept_["L1_DoubjeJet100dEta1p6"] )
+      if ( trigger_accept_["L1_DoubjeJet112"] )
       {
          if ( trigger_accept_["HLT_2CaloJets100_2CaloBTagCSV084_2PFJets100"] )
          {

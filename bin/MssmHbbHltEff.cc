@@ -80,7 +80,8 @@ int main(int argc, char * argv[])
    
    std::string  refTrigger = "";
    if ( isData_ )
-      refTrigger = "HLT_CaloJets_Muons_CaloBTagCSV_PFJets_v";
+//      refTrigger = "HLT_CaloJets_Muons_CaloBTagCSV_PFJets_v"; // HLT_BTagMu_DiJet20_Mu5_v
+      refTrigger = "HLT_BTagMu_DiJet20_Mu5_v"; // HLT_BTagMu_DiJet20_Mu5_v
    else
       refTrigger = "HLT_ZeroBias_v";
    
@@ -148,6 +149,52 @@ int main(int argc, char * argv[])
    
    h1_["Lumis"] = new TH1F("Lumis","lumi sections per pile-up",70,0.,70.);
    
+   h1x_["jet100btag"] = new TH1F("jet100btag","",50,0,10);
+   h1x_["jet100btagTrg"] = new TH1F("jet100btagTrg","",50,0,10);
+   h1x_["jet100btagTrg84"] = new TH1F("jet100btagTrg84","",50,0,10);
+   
+   h1x_["jet300btag"]      = new TH1F("jet300btag","",50,0,10);
+   h1x_["jet300btagTrg"]   = new TH1F("jet300btagTrg","",50,0,10);
+   h1x_["jet300btagTrg84"] = new TH1F("jet300btagTrg84","",50,0,10);
+   
+   h1x_["jet40btag"] = new TH1F("jet40btag","",50,0,10);
+   h1x_["jet40btagTrg"] = new TH1F("jet40btagTrg","",50,0,10);
+   h1x_["jet40btagTrg84"] = new TH1F("jet40btagTrg84","",50,0,10);
+   
+   h1x_["jet40_100btag"] = new TH1F("jet40_100btag","",50,0,10);
+   h1x_["jet40_100btagTrg"] = new TH1F("jet40_100btagTrg","",50,0,10);
+   h1x_["jet40_100btagTrg84"] = new TH1F("jet40_100btagTrg84","",50,0,10);
+   
+   
+   h1x_["jet40mubtag"] = new TH1F("jet40mubtag","",50,0,10);
+   h1x_["jet40mubtagTrg"] = new TH1F("jet40mubtagTrg","",50,0,10);
+   h1x_["jet40mubtagTrg84"] = new TH1F("jet40mubtagTrg84","",50,0,10);
+
+   h1x_["l1deltaeta"] = new TH1F("l1deltaeta","",100,0,2.5);
+   h1x_["l1deltaetaTrg"] = new TH1F("l1deltaetaTrg","",100,0,2.5);
+      
+   h1x_["l3deltaeta"] = new TH1F("l3deltaeta","",50,0,2.5);
+   h1x_["l3deltaetaTrg"] = new TH1F("l3deltaetaTrg","",50,0,2.5);
+   
+   h1x_["l1offDEta"] = new TH1F("l1offDEta","",100,-2,2);  
+   h1x_["l1DEta"] = new TH1F("l1DEta","",12,0,2.4);  
+   h1x_["offDEta"] = new TH1F("offDEta","",50,-0,2.5);  
+   
+   h1x_["jet100"] = new TH1F("jet100","",60,0,300);
+   h1x_["jet100Trg"] = new TH1F("jet100Trg","",60,0,300);
+   
+   h1x_["jet40"] = new TH1F("jet40","",60,0,300);
+   h1x_["jet40Trg"] = new TH1F("jet40Trg","",60,0,300);
+   
+   h1x_["muon12"] = new TH1F("muon12","",100,0,100);
+   h1x_["muon12Trg"] = new TH1F("muon12Trg","",100,0,100);
+   
+   h1x_["l1muon12"] = new TH1F("l1muon12","",100,0,100);
+   h1x_["l2muon8"] = new TH1F("l2muon8","",100,0,100);
+   h1x_["l3muon12"] = new TH1F("l3muon12","",100,0,100);
+   
+   h1x_["jet40mu"] = new TH1F("jet40mu","",60,0,300);
+   h1x_["jet40muTrg"] = new TH1F("jet40muTrg","",60,0,300);
    
    Analysis analysis(inputList_,"MssmHbbTrigger/Events/EventInfo");
    
@@ -155,16 +202,19 @@ int main(int argc, char * argv[])
    // Vertices
    analysis.addTree<Vertex> ("FastPV","MssmHbbTrigger/Events/hltFastPrimaryVertex");
    analysis.addTree<Vertex> ("FastPVPixel","MssmHbbTrigger/Events/hltFastPVPixelVertices");
+   analysis.addTree<Vertex> ("offlinePV","MssmHbbTrigger/Events/offlineSlimmedPrimaryVertices");
    
    // Jets
    analysis.addTree<Jet> ("L1Jets","MssmHbbTrigger/Events/l1tJets");
    analysis.addTree<Jet> ("CaloJets","MssmHbbTrigger/Events/hltAK4CaloJetsCorrectedIDPassed");
-   analysis.addTree<Jet> ("PFJets","MssmHbbTrigger/Events/hltAK4PFJetsLooseIDCorrected");
+   analysis.addTree<Jet> ("PFJets","MssmHbbTrigger/Events/hltAK4PFJetsCorrected");
+   analysis.addTree<Jet> ("Jets","MssmHbbTrigger/Events/slimmedJetsPuppi");
    
    // Muons
    analysis.addTree<Muon> ("L1Muons","MssmHbbTrigger/Events/l1tMuons");
    analysis.addTree<Muon> ("L2Muons","MssmHbbTrigger/Events/hltL2MuonCandidates");
    analysis.addTree<Muon> ("L3Muons","MssmHbbTrigger/Events/hltL3MuonCandidates");
+   analysis.addTree<Muon> ("Muons","MssmHbbTrigger/Events/slimmedMuons");
    
    // BTag
    analysis.addTree<JetTag> ("JetsTags","MssmHbbTrigger/Events/hltCombinedSecondaryVertexBJetTagsCalo");
@@ -207,7 +257,9 @@ int main(int argc, char * argv[])
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
    
+//   int mycounter = 0;
    for ( int i = 0 ; i < analysis.size() ; ++i )
+//   for ( int i = 0 ; i < 100000 ; ++i )
    {
       analysis.event(i);
       
@@ -265,11 +317,14 @@ int main(int argc, char * argv[])
       // primary vertex
       std::shared_ptr< Collection<Vertex> > fastPVs = analysis.collection<Vertex>("FastPV");
       std::shared_ptr< Collection<Vertex> > fastPVsPixel = analysis.collection<Vertex>("FastPVPixel");
+      std::shared_ptr< Collection<Vertex> > offPVs = analysis.collection<Vertex>("offlinePV");
       if ( fastPVs -> size() < 1 || fastPVsPixel -> size() < 1 ) continue;
       Vertex fastpv = fastPVs->at(0);
       if ( !( ! fastpv.fake() && fastpv.ndof() > 0 && fabs(fastpv.z()) <= 25 && fastpv.rho() <= 2 ) ) continue;
       Vertex fastpvpix = fastPVsPixel->at(0);
       if ( !( ! fastpvpix.fake() && fastpvpix.ndof() > 0 && fabs(fastpvpix.z()) <= 25 && fastpvpix.rho() <= 2 ) ) continue;
+      Vertex pv = offPVs->at(0);
+      if ( !( ! pv.fake() && pv.ndof() > 4 && fabs(pv.z()) <= 24 && pv.rho() <= 2 ) ) continue;
       
 // ======== Begin of L1 ======== //      
 
@@ -865,7 +920,730 @@ int main(int argc, char * argv[])
       }
       
 // ======== End of HLT ======== //  
+
+      // OFFLINE
+      std::shared_ptr< Collection<Jet> >    jets     = analysis.collection<Jet>("Jets");
+      std::shared_ptr< Collection<Muon> >   muons   = analysis.collection<Muon>("Muons");
       
+      std::vector<Jet> jet100;
+      std::vector<double> jet100btag;
+      std::vector<int> jet100flv;
+      bool l1Match = false;
+      bool l2Match = false;
+      bool l3Match = false;
+      bool btagMatch = false;
+      bool btagMatch84 = false;
+      
+      bool l1Match1 = false;
+      bool l1Match2 = false;
+      bool l1Match3 = false;
+      bool l1Match4 = false;
+      bool l2Match1 = false;
+      bool l2Match2 = false;
+      bool l3Match1 = false;
+      bool l3Match2 = false;
+      bool l3Match3 = false;
+      bool l3Match4 = false;
+      std::vector<Jet> l1offJet;
+      std::vector<Jet> l1l1Jet;
+      std::vector<Jet> l2l1Jet;
+      std::vector<Jet> l3l2Jet;
+      std::vector<Jet> l3l3Jet;
+      if ( jets->size() > 1 && l1jet100.size() > 1 )
+      {
+         Jet jet1 = jets->at(0);
+         Jet jet2 = jets->at(1);
+         float deltaEtajj = fabs(jet1.eta()-jet2.eta());
+         float deltaRjj = jet1.p4().DeltaR(jet2.p4());
+         if ( jet1.pt() >= 100 && fabs(jet1.eta()) <= 2.2 && jet2.pt() >= 100 && fabs(jet2.eta()) <= 2.2 && deltaRjj >= 1 )
+         {
+            for ( size_t jl1 = 0; jl1 < l1jet100.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet100.at(jl1);
+               float deltaR1 = jet1.p4().DeltaR(jetl1.p4());
+               float deltaR2 = jet2.p4().DeltaR(jetl1.p4());
+               if ( deltaR1 < 0.3 )
+               {
+                  l1Match1 = true;
+                  l1offJet.push_back(jetl1);
+               }
+               if ( deltaR2 < 0.3 )
+               {
+                  l1Match2 = true;
+                  l1offJet.push_back(jetl1);
+               }
+               if (  l1offJet.size() > 1 ) break;
+               
+            }
+            if ( l1offJet.size() > 1 )
+            {
+               for ( size_t jl1 = 0; jl1 < l1jet100deta.size() ; jl1 += 2 )
+               {
+                  Jet jetl11 = l1jet100deta.at(jl1);
+                  Jet jetl12 = l1jet100deta.at(jl1+1);
+                  float deltaR11 = l1offJet[0].p4().DeltaR(jetl11.p4());
+                  float deltaR22 = l1offJet[1].p4().DeltaR(jetl12.p4());
+                  float deltaR12 = l1offJet[0].p4().DeltaR(jetl12.p4());
+                  float deltaR21 = l1offJet[1].p4().DeltaR(jetl11.p4());
+                  if ( ( deltaR11 < 0.3 && deltaR22 < 0.3 ) || ( deltaR12 < 0.3 && deltaR21 < 0.3  ) )
+                  {
+                     l1Match3 = true;
+                     l1Match4 = true;
+                     l1l1Jet.push_back(jetl11);
+                     l1l1Jet.push_back(jetl12);
+                  }
+                  if (  l1l1Jet.size() > 1 ) break;
+               }
+            }
+            
+            if ( l1offJet.size() > 1 )
+            {
+               for ( size_t jl2 = 0; jl2 < calojets100.size() ; ++jl2 )
+               {
+                  Jet jetl2 = calojets100.at(jl2);
+                  float deltaR1 = l1offJet[0].p4().DeltaR(jetl2.p4());
+                  float deltaR2 = l1offJet[1].p4().DeltaR(jetl2.p4());
+                  if ( deltaR1 < 0.3 ) 
+                  {
+                     l2Match1 = true;
+                     l2l1Jet.push_back(jetl2);
+                  }
+                  if ( deltaR2 < 0.3 )
+                  {
+                     l2Match2 = true;
+                     l2l1Jet.push_back(jetl2);
+                  }
+                  if (  l2l1Jet.size() > 1 ) break;
+               }
+            }
+            
+            
+            if ( l2l1Jet.size() > 1 )
+            {
+               for ( size_t jl3 = 0; jl3 < pfjets100.size() ; ++jl3 )
+               {
+                  Jet jetl3 = pfjets100.at(jl3);
+                  float deltaR1 = l2l1Jet[0].p4().DeltaR(jetl3.p4());
+                  float deltaR2 = l2l1Jet[1].p4().DeltaR(jetl3.p4());
+                  if ( deltaR1 < 0.3 )
+                  {
+                     l3Match1 = true;
+                     l3l2Jet.push_back(jetl3);
+                  }
+                  if ( deltaR2 < 0.3 )
+                  {
+                     l3Match2 = true;
+                     l3l2Jet.push_back(jetl3);
+                  }
+                  if (  l3l2Jet.size() > 1 ) break;
+               }
+            }
+            
+            if ( l3l2Jet.size() > 1 )
+            {
+               for ( size_t jl3 = 0; jl3 < pfjets100deta.size() ; jl3 += 2 )
+               {
+                  Jet jetl31 = pfjets100deta.at(jl3);
+                  Jet jetl32 = pfjets100deta.at(jl3+1);
+                  float deltaR11 = l3l2Jet[0].p4().DeltaR(jetl31.p4());
+                  float deltaR22 = l3l2Jet[1].p4().DeltaR(jetl32.p4());
+                  float deltaR12 = l3l2Jet[0].p4().DeltaR(jetl32.p4());
+                  float deltaR21 = l3l2Jet[1].p4().DeltaR(jetl31.p4());
+                  if ( ( deltaR11 < 0.3 && deltaR22 < 0.3 ) || ( deltaR12 < 0.3 && deltaR21 < 0.3  ) )
+                  {
+                     l3Match3 = true;
+                     l3Match4 = true;
+                     l3l3Jet.push_back(jetl31);
+                     l3l3Jet.push_back(jetl32);
+                  }
+                  if (  l3l3Jet.size() > 1 ) break;
+               }
+            }
+            
+            if ( l1Match1 && l1Match2 && l2Match1 && l2Match2 && l3Match1 && l3Match2  && l3Match3 && l3Match4  && pfjets100deta.size() > 1 && l1Match3 && l1Match4 ) // both
+            {}
+            if ( l1offJet.size() > 1 ) // both
+            {
+               h1x_["l1deltaeta"] -> Fill(deltaEtajj);
+               if ( l1l1Jet.size() > 1 )
+               {
+                  h1x_["l1deltaetaTrg"] -> Fill(deltaEtajj);
+                  h1x_["l1offDEta"] -> Fill(deltaEtajj - fabs(l1l1Jet[0].eta()-l1l1Jet[1].eta()));
+                  h1x_["l1DEta"] -> Fill(fabs(l1l1Jet[0].eta()-l1l1Jet[1].eta()));
+                  h1x_["offDEta"] -> Fill(deltaEtajj);
+               }
+            }
+            if ( l1Match1 && l1Match2 && l2Match1 && l2Match2 && l3Match1 && l3Match2 ) // both
+            {}
+            if ( l1offJet.size() > 1 &&  l2l1Jet.size() > 1 && l3l2Jet.size() > 1 ) // both
+            {
+               h1x_["l3deltaeta"] -> Fill(deltaEtajj);
+               if ( l3l3Jet.size() > 1 ) h1x_["l3deltaetaTrg"] -> Fill(deltaEtajj);
+            }
+         }
+      }
+      // single jet 40
+      l1offJet.clear();
+      l2l1Jet.clear();
+      l3l2Jet.clear();
+      if ( jets->size() > 0 )
+      {
+         Jet jet = jets->at(0);
+         if ( jet.pt() >= 20 && fabs(jet.eta()) <= 2.2 )
+         {
+            float mindR = 9999.;
+            Jet close;
+            for ( size_t jl1 = 0; jl1 < l1jet40.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet40.at(jl1);
+               float deltaR1 = jet.p4().DeltaR(jetl1.p4());
+               if ( deltaR1 < mindR )
+               {
+                  close = jetl1;
+                  mindR = deltaR1;
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l1offJet.push_back(close);
+            }
+            
+            mindR = 9999.;
+            if ( l1offJet.size() > 0 )
+            {
+               for ( size_t jl2 = 0; jl2 < calojets30.size() ; ++jl2 )
+               {
+                  Jet jetl2 = calojets30.at(jl2);
+                  float deltaR1 = l1offJet[0].p4().DeltaR(jetl2.p4());
+                  if ( deltaR1 < mindR ) 
+                  {
+                     close = jetl2;
+                     mindR = deltaR1;
+                  }
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l2l1Jet.push_back(close);
+            }
+            
+            mindR = 9999.;
+            if ( l2l1Jet.size() > 0 )
+            {
+               for ( size_t jl3 = 0; jl3 < pfjets40.size() ; ++jl3 )
+               {
+                  Jet jetl3 = pfjets40.at(jl3);
+                  float deltaR1 = l2l1Jet[0].p4().DeltaR(jetl3.p4());
+                  if ( deltaR1 < mindR )
+                  {
+                     close = jetl3;
+                     mindR = deltaR1;
+                  }
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l3l2Jet.push_back(close);
+            }
+            
+            h1x_["jet40"]  -> Fill(jet.pt());
+            if ( l1offJet.size() > 0 && l2l1Jet.size()> 0 && l3l2Jet.size() > 0 )
+            {
+               h1x_["jet40Trg"]  -> Fill(jet.pt());
+            }
+            
+         }
+      }
+
+      
+      // single mu 12
+      std::vector<Muon> l1offMuon;
+      std::vector<Muon> l2l1Muon;
+      std::vector<Muon> l3l2Muon;
+      std::vector<Jet>  selJets;
+      std::vector<Jet>  selJets2;
+      l1offJet.clear();
+      l2l1Jet.clear();
+      l3l2Jet.clear();
+      if ( muons->size() > 0 )
+      {
+         Muon muon = muons->at(0);
+         if ( muon.pt() >= 3 && fabs(muon.eta()) <= 2.2 )
+         {
+            if ( jets->size() > 0 )
+            {
+               for ( int j = 0; j < jets->size() ; ++j )
+               {
+                  Jet jet = jets->at(j);
+                  if ( jet.pt() > 40 && fabs(jet.eta()) < 2.2 )
+                  {
+                     selJets2.push_back(jet);
+                     float deltaR = jet.p4().DeltaR(muon.p4());
+                     if ( deltaR < 0.4 )
+                     {
+                        selJets.push_back(jet);
+                     }
+                  }
+               }
+            }
+            if ( selJets.size() > 0 && selJets2.size() > 0 )
+            {
+            float mindR = 9999.;
+            Jet close;
+            for ( size_t jl1 = 0; jl1 < l1jet40.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet40.at(jl1);
+               float deltaR1 = selJets[0].p4().DeltaR(jetl1.p4());
+               if ( deltaR1 < mindR )
+               {
+                  close = jetl1;
+                  mindR = deltaR1;
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l1offJet.push_back(close);
+            }
+            
+            mindR = 9999.;
+            if ( l1offJet.size() > 0 )
+            {
+               for ( size_t jl2 = 0; jl2 < calojets30.size() ; ++jl2 )
+               {
+                  Jet jetl2 = calojets30.at(jl2);
+                  float deltaR1 = l1offJet[0].p4().DeltaR(jetl2.p4());
+                  if ( deltaR1 < mindR ) 
+                  {
+                     close = jetl2;
+                     mindR = deltaR1;
+                  }
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l2l1Jet.push_back(close);
+            }
+            
+            mindR = 9999.;
+            if ( l2l1Jet.size() > 0 )
+            {
+               for ( size_t jl3 = 0; jl3 < pfjets40.size() ; ++jl3 )
+               {
+                  Jet jetl3 = pfjets40.at(jl3);
+                  float deltaR1 = l2l1Jet[0].p4().DeltaR(jetl3.p4());
+                  if ( deltaR1 < mindR )
+                  {
+                     close = jetl3;
+                     mindR = deltaR1;
+                  }
+               }
+            }
+            if ( mindR < 0.3 )
+            {
+               l3l2Jet.push_back(close);
+            }
+               // muon matching
+
+                  for ( size_t ml1 = 0; ml1 < l1mu12.size() ; ++ml1 )
+                  {
+                     Muon mul1 = l1mu12.at(ml1);
+                     float deltaR1 = muon.p4().DeltaR(mul1.p4());
+                     if ( deltaR1 < 0.3 )
+                     {
+                        l1offMuon.push_back(mul1);
+                     }
+                     if (  l1offMuon.size() > 0 ) break;
+                  }
+                  if ( l1offMuon.size() > 0 )
+                  {
+                     for ( size_t ml2 = 0; ml2 < l2muon8.size() ; ++ml2 )
+                     {
+                        Muon mul2 = l2muon8.at(ml2);
+                        float deltaR1 = muon.p4().DeltaR(mul2.p4());
+                        if ( deltaR1 < 0.3 )
+                        {
+                           l2l1Muon.push_back(mul2);
+                        }
+                        if ( l2l1Muon.size() > 0 ) break;
+                     }
+                  }
+                  if ( l2l1Muon.size() > 0 )
+                  {
+                     for ( size_t ml3 = 0; ml3 < l3muon12.size() ; ++ml3 )
+                     {
+                        Muon mul3 = l3muon12.at(ml3);
+                        float deltaR1 = muon.p4().DeltaR(mul3.p4());
+                        if ( deltaR1 < 0.3 )
+                        {
+                           l3l2Muon.push_back(mul3);
+                        }
+                        if ( l3l2Muon.size() > 0 ) break;
+                     }
+                  }
+               if ( l1offJet.size() > 0 && l2l1Jet.size()> 0 && l3l2Jet.size() > 0 )
+               {
+                  h1x_["muon12"]  -> Fill(muon.pt());
+               
+                  if ( l1offMuon.size() > 0 )                h1x_["l1muon12"]  -> Fill(l1offMuon[0].pt());
+                  if ( l2l1Muon.size() > 0 )                 h1x_["l2muon8"]  -> Fill(l2l1Muon[0].pt());
+                  if ( l3l2Muon.size() > 0 )                 h1x_["l3muon12"]  -> Fill(l3l2Muon[0].pt());
+
+                  if ( l1offMuon.size() > 0 && l2l1Muon.size() > 0 && l3l2Muon.size() > 0 )
+                  {
+                      h1x_["muon12Trg"]  -> Fill(muon.pt());
+                  }
+               }
+            }
+         }
+               
+      }
+      
+      // single jet 40 + mu 12
+      l1offJet.clear();
+      l2l1Jet.clear();
+      l3l2Jet.clear();
+      l1offMuon.clear();
+      l2l1Muon.clear();
+      l3l2Muon.clear();
+      std::vector<Muon> selMuons;
+      std::vector<Muon> l1MuJet;
+      std::vector<Muon> l3MuJet;
+      if ( jets->size() > 0 )
+      {
+         Jet jet = jets->at(0);
+         if ( jet.pt() >= 20 && fabs(jet.eta()) <= 2.2 )
+         {
+            if ( muons->size() > 0 )
+            {
+               for ( int m = 0; m < muons->size() ; ++m )
+               {
+                  Muon mu = muons->at(m);
+                  if ( mu.pt() > 12 && fabs(mu.eta()) < 2.2 )
+                  {
+                     float deltaR = jet.p4().DeltaR(mu.p4());
+                     if ( deltaR < 0.4 )
+                     {
+                        selMuons.push_back(mu);
+                        break;
+                     }
+                  }
+               }
+            }
+            if ( selMuons.size() > 0 )
+            {
+               Muon muon  = selMuons[0];
+                  for ( size_t jl1 = 0; jl1 < l1jet40.size() ; ++jl1 )
+                  {
+                     Jet jetl1 = l1jet40.at(jl1);
+                     float deltaR1 = jet.p4().DeltaR(jetl1.p4());
+                     if ( deltaR1 < 0.3 )
+                     {
+                        l1offJet.push_back(jetl1);
+                     }
+                     if (  l1offJet.size() > 0 ) break;
+                  }
+                  for ( size_t ml1 = 0; ml1 < l1mu12.size() ; ++ml1 )
+                  {
+                     Muon mul1 = l1mu12.at(ml1);
+                     float deltaR1 = muon.p4().DeltaR(mul1.p4());
+                     if ( deltaR1 < 0.3 )
+                     {
+                        l1offMuon.push_back(mul1);
+                     }
+                     if (  l1offMuon.size() > 0 ) break;
+                  }
+                  
+                  if ( l1offJet.size() > 0 )
+                  {
+                     for ( size_t jl2 = 0; jl2 < calojets30.size() ; ++jl2 )
+                     {
+                        Jet jetl2 = calojets30.at(jl2);
+                        float deltaR1 = l1offJet[0].p4().DeltaR(jetl2.p4());
+                        if ( deltaR1 < 0.3 ) 
+                        {
+                           l2l1Jet.push_back(jetl2);
+                        }
+                        if (  l2l1Jet.size() > 0 ) break;
+                     }
+                  }
+                  if ( l1offMuon.size() > 0 )
+                  {
+                     for ( size_t ml2 = 0; ml2 < l2muon8.size() ; ++ml2 )
+                     {
+                        Muon mul2 = l2muon8.at(ml2);
+                        float deltaR1 = muon.p4().DeltaR(mul2.p4());
+                        if ( deltaR1 < 0.3 )
+                        {
+                           l2l1Muon.push_back(mul2);
+                        }
+                        if ( l2l1Muon.size() > 0 ) break;
+                     }
+                  }
+                  if ( l1offJet.size() > 0 && l1offMuon.size() > 0 )
+                  {
+                     float dR = l1offJet[0].p4().DeltaR(l1offMuon[0].p4());
+                     if ( dR <= 0.4 )
+                     {
+                        l1MuJet.push_back(l1offMuon[0]);
+                     }
+                  }
+                  
+                  if ( l2l1Jet.size() > 0 )
+                  {
+                     for ( size_t jl3 = 0; jl3 < pfjets40.size() ; ++jl3 )
+                     {
+                        Jet jetl3 = pfjets40.at(jl3);
+                        float deltaR1 = l2l1Jet[0].p4().DeltaR(jetl3.p4());
+                        if ( deltaR1 < 0.3 )
+                        {
+                           l3l2Jet.push_back(jetl3);
+                        }
+                        if (  l3l2Jet.size() > 0 ) break;
+                     }
+                  }
+                  
+                  if ( l2l1Muon.size() > 0 )
+                  {
+                     for ( size_t ml3 = 0; ml3 < l3muon12.size() ; ++ml3 )
+                     {
+                        Muon mul3 = l3muon12.at(ml3);
+                        float deltaR1 = muon.p4().DeltaR(mul3.p4());
+                        if ( deltaR1 < 0.3 )
+                        {
+                           l3l2Muon.push_back(mul3);
+                        }
+                        if ( l3l2Muon.size() > 0 ) break;
+                     }
+                  }
+                  if ( l3l2Jet.size() > 0 && l3l2Muon.size() > 0 )
+                  {
+                     float dR = l3l2Jet[0].p4().DeltaR(l3l2Muon[0].p4());
+                     if ( dR <= 0.4 )
+                     {
+                        l3MuJet.push_back(l3l2Muon[0]);
+                     }
+                  }
+               h1x_["jet40mu"]  -> Fill(jet.pt());
+               if ( l1offJet.size() > 0 && l2l1Jet.size()> 0 && l3l2Jet.size() > 0  )
+               {
+//                  if ( l1offMuon.size() > 0 && l2l1Muon.size()> 0 && l3l2Muon.size() > 0 && l1MuJet.size() > 0 && l3MuJet.size() > 0 )
+//                  if ( l3MuJet.size() > 0 )
+                  {
+                     h1x_["jet40muTrg"]  -> Fill(jet.pt());
+                  }
+               }
+               
+            }
+         }
+               
+      }
+      
+      // single jet 100
+      l1offJet.clear();
+      l2l1Jet.clear();
+      l3l2Jet.clear();
+      if ( jets->size() > 0 )
+      {
+         Jet jet = jets->at(0);
+         if ( jet.pt() >= 40 && fabs(jet.eta()) <= 2.2 )
+         {
+            for ( size_t jl1 = 0; jl1 < l1jet100.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet100.at(jl1);
+               float deltaR1 = jet.p4().DeltaR(jetl1.p4());
+               if ( deltaR1 < 0.3 )
+               {
+                  l1offJet.push_back(jetl1);
+                  break;
+               }
+            }
+            if ( l1offJet.size() > 0 )
+            {
+               for ( size_t jl2 = 0; jl2 < calojets100.size() ; ++jl2 )
+               {
+                  Jet jetl2 = calojets100.at(jl2);
+                  float deltaR1 = l1offJet[0].p4().DeltaR(jetl2.p4());
+                  if ( deltaR1 < 0.3 ) 
+                  {
+                     l2l1Jet.push_back(jetl2);
+                     break;
+                  }
+               }
+            }
+            if ( l2l1Jet.size() > 0 )
+            {
+               for ( size_t jl3 = 0; jl3 < pfjets100.size() ; ++jl3 )
+               {
+                  Jet jetl3 = pfjets100.at(jl3);
+                  float deltaR1 = l2l1Jet[0].p4().DeltaR(jetl3.p4());
+                  if ( deltaR1 < 0.3 )
+                  {
+                     l3l2Jet.push_back(jetl3);
+                     break;
+                  }
+               }
+            }
+            
+            h1x_["jet100"]  -> Fill(jet.pt());
+            if ( l1offJet.size() > 0 && l2l1Jet.size()> 0 && l3l2Jet.size() > 0 )
+            {
+               h1x_["jet100Trg"]  -> Fill(jet.pt());
+            }
+            
+         }
+      }
+      
+      
+      l1Match = false;
+      l2Match = false;
+      l3Match = false;
+      if ( jets->size() > 0 )
+      {
+         Jet jet = jets->at(0);
+         if ( jet.pt() >= 100  && fabs(jet.eta()) <= 2.2 )
+         {
+            // matching
+            for ( size_t jl1 = 0; jl1 < l1jet100.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet100.at(jl1);
+               float deltaR = jet.p4().DeltaR(jetl1.p4());
+               if ( deltaR < 0.5 ) l1Match = true;
+            }
+            for ( size_t jl2 = 0; jl2 < calojets100.size() ; ++jl2 )
+            {
+               Jet jetl2 = calojets100.at(jl2);
+               float deltaR = jet.p4().DeltaR(jetl2.p4());
+               if ( deltaR < 0.5 ) l2Match = true;
+            }
+            for ( size_t jl3 = 0; jl3 < pfjets100.size() ; ++jl3 )
+            {
+               Jet jetl3 = pfjets100.at(jl3);
+               float deltaR = jet.p4().DeltaR(jetl3.p4());
+               if ( deltaR < 0.5 ) l3Match = true;
+            }
+            for ( size_t jl4 = 0; jl4 < bjets100wp092.size() ; ++jl4 )
+            {
+               Jet jetl4 = bjets100wp092.at(jl4);
+               float deltaR = jet.p4().DeltaR(jetl4.p4());
+               if ( deltaR < 0.5 ) btagMatch = true;
+            }
+            for ( size_t jl4 = 0; jl4 < bjets100wp084.size() ; ++jl4 )
+            {
+               Jet jetl4 = bjets100wp084.at(jl4);
+               float deltaR = jet.p4().DeltaR(jetl4.p4());
+               if ( deltaR < 0.5 ) btagMatch84 = true;
+            }
+         }
+         if ( l1Match && l2Match && l3Match && abs(jet.flavour()) == 5 )
+         {
+            h1x_["jet100btag"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch )
+               h1x_["jet100btagTrg"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch84 )
+               h1x_["jet100btagTrg84"] -> Fill(-log(1-jet.btag()));
+            
+            if ( jet.pt() > 300 )
+            {
+               h1x_["jet300btag"] -> Fill(-log(1-jet.btag()));
+               if ( btagMatch )
+                  h1x_["jet300btagTrg"] -> Fill(-log(1-jet.btag()));
+               if ( btagMatch84 )
+                  h1x_["jet300btagTrg84"] -> Fill(-log(1-jet.btag()));
+               }
+         }
+         // =====================
+         l1Match = false;
+         l2Match = false;
+         l3Match = false;
+         btagMatch = false;
+         btagMatch84 = false;
+         bool l3mujMatch = false;
+         if ( jet.pt() >= 40 && fabs(jet.eta()) <= 2.2 )
+         {
+            // matching
+            for ( size_t jl1 = 0; jl1 < l1jet40.size() ; ++jl1 )
+            {
+               Jet jetl1 = l1jet40.at(jl1);
+               float deltaR = jet.p4().DeltaR(jetl1.p4());
+               if ( deltaR < 0.5 ) l1Match = true;
+            }
+            for ( size_t jl2 = 0; jl2 < calojets30.size() ; ++jl2 )
+            {
+               Jet jetl2 = calojets30.at(jl2);
+               float deltaR = jet.p4().DeltaR(jetl2.p4());
+               if ( deltaR < 0.5 ) l2Match = true;
+            }
+            for ( size_t jl3 = 0; jl3 < pfjets40.size() ; ++jl3 )
+            {
+               Jet jetl3 = pfjets40.at(jl3);
+               float deltaR = jet.p4().DeltaR(jetl3.p4());
+               if ( deltaR < 0.5 ) l3Match = true;
+            }
+            for ( size_t jl4 = 0; jl4 < bjets30wp092.size() ; ++jl4 )
+            {
+               Jet jetl4 = bjets30wp092.at(jl4);
+               float deltaR = jet.p4().DeltaR(jetl4.p4());
+               if ( deltaR < 0.5 ) btagMatch = true;
+            }
+            for ( size_t jl4 = 0; jl4 < bjets30wp084.size() ; ++jl4 )
+            {
+               Jet jetl4 = bjets30wp084.at(jl4);
+               float deltaR = jet.p4().DeltaR(jetl4.p4());
+               if ( deltaR < 0.5 ) btagMatch84 = true;
+            }
+            for ( size_t jl3 = 0; jl3 < l3pfmuonjets40.size() ; ++jl3 )
+            {
+               Jet jetl3 = l3pfmuonjets40.at(jl3);
+               float deltaR = jet.p4().DeltaR(jetl3.p4());
+               if ( deltaR < 0.5 ) l3mujMatch = true;
+            }
+         }
+         if ( l1Match && l2Match && l3Match && abs(jet.flavour()) == 5 && jet.pt() < 100  )
+         {
+            h1x_["jet40_100btag"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch )
+               h1x_["jet40_100btagTrg"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch84 )
+               h1x_["jet40_100btagTrg84"] -> Fill(-log(1-jet.btag()));
+         }
+         if ( l1Match && l2Match && l3Match && abs(jet.flavour()) == 5  )
+         {
+            h1x_["jet40btag"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch )
+               h1x_["jet40btagTrg"] -> Fill(-log(1-jet.btag()));
+            if ( btagMatch84 )
+               h1x_["jet40btagTrg84"] -> Fill(-log(1-jet.btag()));
+         }
+         
+         bool mujetMatch = false;
+         bool mumuMatch = false;
+         if ( muons->size() > 0 && l1Match && l2Match && l3Match && l3mujMatch )
+         {
+            for ( int m = 0 ; m < muons->size() ; ++m )
+            {
+               Muon muon = muons->at(m);
+               if ( muon.pt() < 12 || fabs(muon.eta()) > 2.2 ) continue;
+               float deltaR = jet.p4().DeltaR(muon.p4());
+               if ( deltaR < 0.4 ) mujetMatch = true;
+               for ( size_t m1 = 0; m1 < l3pfjetmuons40.size() ; ++m1 )
+               {
+                  Muon muon1 = l3pfjetmuons40.at(m1);
+                  float deltaR = muon.p4().DeltaR(muon1.p4());
+                  if ( deltaR < 0.5 ) mumuMatch = true;
+               }
+            }
+            if ( abs(jet.flavour()) == 5 && mujetMatch && mumuMatch )
+            {
+               h1x_["jet40mubtag"] -> Fill(-log(1-jet.btag()));
+               if ( btagMatch )
+                  h1x_["jet40mubtagTrg"] -> Fill(-log(1-jet.btag()));
+               if ( btagMatch84 )
+                  h1x_["jet40mubtagTrg84"] -> Fill(-log(1-jet.btag()));
+            }
+
+         }
+      }
+            
    }
    
 //    // number of zerobias events
@@ -880,6 +1658,10 @@ int main(int argc, char * argv[])
    {
       if ( ! isData_ && h.first == "Lumis" ) continue;
       std::cout << h.first << std::endl;
+      h.second->Write();
+   }
+   for ( auto & h : h1x_ )
+   {
       h.second->Write();
    }
    
