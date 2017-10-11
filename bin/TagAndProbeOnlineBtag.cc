@@ -53,21 +53,29 @@ int main(int argc, char * argv[])
    
    // histograms
    std::map<std::string, TH1F*> h1;
+   int nbins = 12+7+6+2;
+   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,450,500,550,600,800,1000};
    
-   h1["pt_tag"  ]   = new TH1F("pt_tag"    , "" , 100, 0 , 1000);
-   h1["eta_tag" ]   = new TH1F("eta_tag"   , "" , 100, -5, 5   );
-   h1["phi_tag" ]   = new TH1F("phi_tag"   , "" , 100, -4, 4   );
-   h1["btag_tag"]   = new TH1F("btag_tag"  , "" , 500, 0 , 1   );
+   h1["pt_tag"  ]      = new TH1F("pt_tag"      , "" , 100, 0   , 1000);
+   h1["pt_tag_var"]    = new TH1F("pt_tag_var"  , "" , nbins, ptbins);
+   h1["eta_tag" ]      = new TH1F("eta_tag"     , "" , 11 , -2.2, 2.2 );
+   h1["phi_tag" ]      = new TH1F("phi_tag"     , "" , 16,  -3.2, 3.2 );
+   h1["btag_tag"]      = new TH1F("btag_tag"    , "" , 200, 0   , 1   );
+   h1["btaglog_tag"]   = new TH1F("btaglog_tag" , "" , 20 , 0   , 10  );
    
-   h1["pt_probe_den"  ] = new TH1F("pt_probe_den"  , "" , 100, 0 , 1000);
-   h1["eta_probe_den" ] = new TH1F("eta_probe_den" , "" , 100, -5, 5   );
-   h1["phi_probe_den" ] = new TH1F("phi_probe_den" , "" , 100, -4, 4   );
-   h1["btag_probe_den"] = new TH1F("btag_probe_den", "" , 500, 0 , 1   );
+   h1["pt_probe_den"  ]    = new TH1F("pt_probe_den"      , "" , 100, 0   , 1000);
+   h1["pt_probe_den_var"]  = new TH1F("pt_probe_den_var"  , "" , nbins, ptbins);
+   h1["eta_probe_den" ]    = new TH1F("eta_probe_den"     , "" , 11 , -2.2, 2.2 );
+   h1["phi_probe_den" ]    = new TH1F("phi_probe_den"     , "" , 16,  -3.2, 3.2 );
+   h1["btag_probe_den"]    = new TH1F("btag_probe_den"    , "" , 200, 0   , 1   );
+   h1["btaglog_probe_den"] = new TH1F("btaglog_probe_den" , "" , 20 , 0   , 10  );
 
-   h1["pt_probe_num"  ] = new TH1F("pt_probe_num"  , "" , 100, 0 , 1000);
-   h1["eta_probe_num" ] = new TH1F("eta_probe_num" , "" , 100, -5, 5   );
-   h1["phi_probe_num" ] = new TH1F("phi_probe_num" , "" , 100, -4, 4   );
-   h1["btag_probe_num"] = new TH1F("btag_probe_num", "" , 500, 0 , 1   );
+   h1["pt_probe_num"  ]    = new TH1F("pt_probe_num"      , "" , 100, 0   , 1000);
+   h1["pt_probe_num_var"]  = new TH1F("pt_probe_num_var"  , "" , nbins, ptbins);
+   h1["eta_probe_num" ]    = new TH1F("eta_probe_num"     , "" , 11 , -2.2, 2.2 );
+   h1["phi_probe_num" ]    = new TH1F("phi_probe_num"     , "" , 16,  -3.2, 3.2 );
+   h1["btag_probe_num"]    = new TH1F("btag_probe_num"    , "" , 200, 0   , 1   );
+   h1["btaglog_probe_num"] = new TH1F("btaglog_probe_num" , "" , 20 , 0   , 10  );
       
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
@@ -170,16 +178,20 @@ int main(int argc, char * argv[])
       ++nsel[4];
      
       // fill histograms for tag jet 
-      h1["pt_tag"  ] -> Fill(selectedJets[1]->pt()  );
-      h1["eta_tag" ] -> Fill(selectedJets[1]->eta() );
-      h1["phi_tag" ] -> Fill(selectedJets[1]->phi() );
-      h1["btag_tag"] -> Fill(selectedJets[1]->btag());
+      h1["pt_tag"  ]    -> Fill(selectedJets[1]->pt()  );
+      h1["pt_tag_var"]  -> Fill(selectedJets[1]->pt()  );
+      h1["eta_tag" ]    -> Fill(selectedJets[1]->eta() );
+      h1["phi_tag" ]    -> Fill(selectedJets[1]->phi() );
+      h1["btag_tag"]    -> Fill(selectedJets[1]->btag());
+      h1["btaglog_tag"] -> Fill(-log(1-selectedJets[1]->btag()));
       
       // fill histograms for probe jet not matched yet 
-      h1["pt_probe_den"  ] -> Fill(selectedJets[0]->pt()  );
-      h1["eta_probe_den" ] -> Fill(selectedJets[0]->eta() );
-      h1["phi_probe_den" ] -> Fill(selectedJets[0]->phi() );
-      h1["btag_probe_den"] -> Fill(selectedJets[0]->btag());
+      h1["pt_probe_den"  ]    -> Fill(selectedJets[0]->pt()  );
+      h1["pt_probe_den_var"]  -> Fill(selectedJets[0]->pt()  );
+      h1["eta_probe_den" ]    -> Fill(selectedJets[0]->eta() );
+      h1["phi_probe_den" ]    -> Fill(selectedJets[0]->phi() );
+      h1["btag_probe_den"]    -> Fill(selectedJets[0]->btag());
+      h1["btaglog_probe_den"] -> Fill(-log(1-selectedJets[0]->btag()));
       
       
       // is probe jet matched?
@@ -197,10 +209,12 @@ int main(int argc, char * argv[])
       ++nsel[5];
       
       // fill histograms for probe jet 
-      h1["pt_probe_num"  ] -> Fill(selectedJets[0]->pt()  );
-      h1["eta_probe_num" ] -> Fill(selectedJets[0]->eta() );
-      h1["phi_probe_num" ] -> Fill(selectedJets[0]->phi() );
-      h1["btag_probe_num"] -> Fill(selectedJets[0]->btag());
+      h1["pt_probe_num"  ]    -> Fill(selectedJets[0]->pt()  );
+      h1["pt_probe_num_var"]  -> Fill(selectedJets[0]->pt()  );
+      h1["eta_probe_num" ]    -> Fill(selectedJets[0]->eta() );
+      h1["phi_probe_num" ]    -> Fill(selectedJets[0]->phi() );
+      h1["btag_probe_num"]    -> Fill(selectedJets[0]->btag());
+      h1["btaglog_probe_num"] -> Fill(-log(1-selectedJets[0]->btag()));
       
 //            std::cout << "oioi - end" << std::endl;
 //            std::cout << "oioi ============= " << std::endl;
@@ -214,7 +228,6 @@ int main(int argc, char * argv[])
       ih1.second -> Write();
    }
    
-   hout.Write();
    hout.Close();
    
 // PRINT OUTS   
