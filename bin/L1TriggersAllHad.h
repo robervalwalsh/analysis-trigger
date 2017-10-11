@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::tools;
+using namespace analysis::core;
 
 
 bool L1SingleJet(Analysis & , std::map<std::string, TH1F*> & , const int &, const float & );

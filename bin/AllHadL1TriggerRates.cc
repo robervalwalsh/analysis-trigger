@@ -16,7 +16,7 @@
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::tools;
+using namespace analysis::core;
 
 bool TriggerObjectSelection(const std::shared_ptr< Collection<TriggerObject> > objects, const unsigned int & nmin, const double & ptmin, const double & etamax, const double & detamax = -1);
 

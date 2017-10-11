@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::tools;
+using namespace analysis::core;
 
 
 std::map<std::string, TH1F*> h1_;

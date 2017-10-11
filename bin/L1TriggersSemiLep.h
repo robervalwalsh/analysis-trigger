@@ -5,7 +5,7 @@
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::tools;
+using namespace analysis::core;
 
 
 bool L1SingleMu3(Analysis & );
