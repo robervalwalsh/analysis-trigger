@@ -27,7 +27,7 @@ while ( $count < $#ptmin + 1 )
 
    echo $cfgfile
 
-   cp -pf tep_template.cfg $cfgfile
+   cp -pf tag_and_probe.cfg $cfgfile
    
    sed -i -e "s/ERA/$era/g" $cfgfile
    sed -i -e "s/PTMIN/$ptmin[$count]/g" $cfgfile
