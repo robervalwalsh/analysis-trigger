@@ -1,5 +1,0 @@
-To split a filelist. e.g filelist_btagmu20.txt, in multiple files use the script
-/afs/desy.de/user/w/walsh/bin/split.csh
-
-e.g.
-split.csh 400 filelist_btagmu20.txt

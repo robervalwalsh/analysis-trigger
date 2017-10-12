@@ -1,1 +1,0 @@
-/pnfs/desy.de/cms/tier2/store/user/rwalsh/Analysis/Ntuples/DATA/Run2016/80x_triggerstudies17_run2016hv1_raw_userv51/BTagCSV/Run2016H-03Feb2017_ver3-v1/170512_124337/0000/ntuple_1.root
