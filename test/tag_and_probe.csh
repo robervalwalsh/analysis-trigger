@@ -38,7 +38,7 @@ while ( $count < $#ptmin + 1 )
    sed -i -e "s/OBTAG/$obtag[$count]/g" $cfgfile
    sed -i -e "s/OPF/$opf[$count]/g" $cfgfile
    
-   ./naf_submit.csh "rootFileList_"$era".txt" TagAndProbeOnlineBtag $cfgfile $splits json_2017.txt
+   naf_submit.csh "rootFileList_"$era".txt" TagAndProbeOnlineBtag $cfgfile $splits json_2017.txt
    
    rm -f $cfgfile
 
