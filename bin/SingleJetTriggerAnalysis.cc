@@ -18,6 +18,8 @@ using namespace analysis;
 using namespace analysis::tools;
 
 std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collection<TriggerObject> > & tos, const int & idx);
+bool MatchOnlineOffline(const Jet & jet, const std::vector<TriggerObject *> & tos);
+bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos);
 
 // =============================================================================================   
 int main(int argc, char * argv[])
@@ -55,6 +57,16 @@ int main(int argc, char * argv[])
    h1["pt"]  = new TH1F("pt"  , "" , 100,  0   ,  1000  );
    h1["eta"] = new TH1F("eta" , "" ,  12, -2.4 ,   2.4);
    h1["phi"] = new TH1F("phi" , "" ,  16, -3.2 ,   3.2);
+   
+   if ( psweight_ )
+   {
+       h1["n_psw"]   = new TH1F("n_psw"   , "" ,   5,  0   ,   5  );
+       h1["pt_psw"]  = new TH1F("pt_psw"  , "" , 100,  0   ,  1000  );
+       h1["eta_psw"] = new TH1F("eta_psw" , "" ,  12, -2.4 ,   2.4);
+       h1["phi_psw"] = new TH1F("phi_psw" , "" ,  16, -3.2 ,   3.2);
+   
+   }
+
       
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
@@ -145,102 +157,46 @@ int main(int argc, char * argv[])
       if ( triggerObjects_.size() > 2 )
       {
          // select L1 objects
-//         selectedL1Jets = SelectTriggerObjects(analysis,0);
-      
          auto l1jets = analysis.collection<TriggerObject>(triggerObjects_[0]);
-         for ( int j = 0; j < l1jets->size() ; ++j )
-         {
-            TriggerObject * l1jet = &l1jets->at(j);
-            if ( ntomin_[0] < 1 )
-            {
-               selectedL1Jets.push_back(l1jet);
-            }
-            else  // L1 emulation
-            {
-               if ( l1jet -> pt() >= toptmin_[0][0] && fabs( l1jet -> eta() ) <= toetamax_[0][0] ) 
-                  selectedL1Jets.push_back(l1jet);
-            }
-         }
+         selectedL1Jets = SelectTriggerObjects(l1jets,0);
          if ( (int)selectedL1Jets.size() < ntomin_[0]  ) continue;
          
          // select L2 objects
          auto l2jets = analysis.collection<TriggerObject>(triggerObjects_[1]);
-         for ( int j = 0; j < l2jets->size() ; ++j )
-         {
-            TriggerObject * l2jet = &l2jets->at(j);
-            if ( ntomin_[1] < 1 )
-            {
-               selectedL2Jets.push_back(l2jet);
-            }
-            else  // L2 emulation
-            {
-               if ( l2jet -> pt() >= toptmin_[1][0] && fabs( l2jet -> eta() ) <= toetamax_[1][0] ) 
-                  selectedL2Jets.push_back(l2jet);
-            }
-         }
+         selectedL2Jets = SelectTriggerObjects(l2jets,1);
          if ( (int)selectedL2Jets.size() < ntomin_[1]  ) continue;
       
          // select L3 objects
          auto l3jets = analysis.collection<TriggerObject>(triggerObjects_[2]);
-         for ( int j = 0; j < l3jets->size() ; ++j )
-         {
-            TriggerObject * l3jet = &l3jets->at(j);
-            if ( ntomin_[2] < 1 )
-            {
-               selectedL3Jets.push_back(l3jet);
-            }
-            else  // L3 emulation
-            {
-               if ( l3jet -> pt() >= toptmin_[2][0] && fabs( l3jet -> eta() ) <= toetamax_[2][0] ) 
-                  selectedL3Jets.push_back(l3jet);
-            }
-         }
+         selectedL3Jets = SelectTriggerObjects(l3jets,0);
          if ( (int)selectedL3Jets.size() < ntomin_[2]  ) continue;
       }
       
       // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
-      if ( triggerObjects_.size() > 2 )
+      if ( matchonoff_ )
       {
          bool l1match = false;
-         if ( l1tjetsnmin_ > 0 )
-         {
-            for ( size_t l1 = 0; l1 < selectedL1TJets.size() ; ++l1 )
-            {
-               if ( jet -> deltaR(*selectedL1TJets[l1]) < matchonoffdrmax_ ) l1match = true;
-               if ( l1match ) break;
-            }
-         }
-         else
-         {
-            for ( size_t l1 = 0; l1 < selectedL1Jets.size() ; ++l1 )
-            {
-               if ( jet -> deltaR(*selectedL1Jets[l1]) < matchonoffdrmax_ ) l1match = true;
-               if ( l1match ) break;
-            }
-         }
-         if ( !l1match && matchonoff_ ) continue;
+         if ( l1tjetsnmin_ > 0 )  l1match = MatchOnlineOffline(*(jet),selectedL1TJets);
+         else                     l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
+         if ( !l1match ) continue;
          
-         bool l2match = false;
-         for ( size_t l2 = 0; l2 < selectedL2Jets.size() ; ++l2 )
-         {
-            if ( jet -> deltaR(*selectedL2Jets[l2]) < matchonoffdrmax_ ) l2match = true;
-            if ( l2match ) break;
-         }
-         if ( !l2match && matchonoff_ ) continue;
+         bool l2match = MatchOnlineOffline(*(jet),selectedL2Jets);
+         if ( !l2match ) continue;
          
-         bool l3match = false;
-         for ( size_t l3 = 0; l3 < selectedL3Jets.size() ; ++l3 )
-         {
-            if ( jet -> deltaR(*selectedL3Jets[l3]) < matchonoffdrmax_ ) l3match = true;
-            if ( l3match ) break;
-         }
-         if ( !l3match && matchonoff_ ) continue;
+         bool l3match = MatchOnlineOffline(*(jet),selectedL3Jets);
+         if ( !l3match ) continue;
       }
       
       // fill histograms
-      h1["pt" ]    -> Fill(jet->pt() , psw);
-      h1["eta"]    -> Fill(jet->eta(), psw);
-      h1["phi"]    -> Fill(jet->phi(), psw);
+      h1["pt" ]     -> Fill(jet->pt() );
+      h1["eta"]     -> Fill(jet->eta());
+      h1["phi"]     -> Fill(jet->phi());
+      if ( psweight_ )
+      {
+         h1["pt_psw" ] -> Fill(jet->pt() , psw);
+         h1["eta_psw"] -> Fill(jet->eta(), psw);
+         h1["phi_psw"] -> Fill(jet->phi(), psw);
+      }
       
       
    } // end of event loop
@@ -253,6 +209,9 @@ int main(int argc, char * argv[])
    hout.Close();
    
 } //end main
+
+
+// ================================
 
 std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collection<TriggerObject> > & tos, const int & idx)
 {
@@ -274,4 +233,32 @@ std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collect
    }
    return seltos;
 
+}
+
+bool MatchOnlineOffline(const Jet & jet, const std::vector<TriggerObject *> & tos)
+{
+   bool match = false;
+   if ( tos.size() < 1 ) return true; // ?????
+   
+   for ( size_t i = 0; i < tos.size() ; ++i )
+   {
+      if ( jet.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
+      if ( match ) break;
+   }
+   return match;
+   
+}
+
+bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos)
+{
+   bool match = false;
+   if ( tos.size() < 1 ) return true; // ?????
+   
+   for ( size_t i = 0; i < tos.size() ; ++i )
+   {
+      if ( jet.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
+      if ( match ) break;
+   }
+   return match;
+   
 }
