@@ -10,12 +10,12 @@
 #include "TChain.h"
 #include "TH1.h" 
 
-#include "Analysis/Core/interface/Analysis.h"
-#include "Analysis/Core/bin/macro_config.h"
+#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Tools/bin/macro_config.h"
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 // =============================================================================================   
 int main(int argc, char * argv[])

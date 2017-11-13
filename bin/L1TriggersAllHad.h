@@ -1,11 +1,11 @@
 #ifndef Analysis_TriggerStudies_L1TriggersAllHad_h
 #define Analysis_TriggerStudies_L1TriggersAllHad_h 1
 
-#include "Analysis/Core/interface/Analysis.h"
+#include "Analysis/Tools/interface/Analysis.h"
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 
 bool L1SingleJet(Analysis & , std::map<std::string, TH1F*> & , const int &, const float & );

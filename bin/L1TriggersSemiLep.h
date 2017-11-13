@@ -1,11 +1,11 @@
 #ifndef Analysis_TriggerStudies_L1TriggersSemiLep_h
 #define Analysis_TriggerStudies_L1TriggersSemiLep_h 1
 
-#include "Analysis/Core/interface/Analysis.h"
+#include "Analysis/Tools/interface/Analysis.h"
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 
 bool L1SingleMu3(Analysis & );

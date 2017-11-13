@@ -14,13 +14,13 @@
 #include "TVectorD.h"
 #include "TLorentzVector.h"
 
-#include "Analysis/Core/interface/Analysis.h"
+#include "Analysis/Tools/interface/Analysis.h"
 
 #include "lumis.h" 
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 
 std::map<std::string, TH1F*> h1_;
