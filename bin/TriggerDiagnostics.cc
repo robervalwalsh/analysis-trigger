@@ -13,7 +13,7 @@
 #include "TGraphAsymmErrors.h"
 #include "TVectorD.h"
 
-#include "Analysis/Core/interface/Analysis.h"
+#include "Analysis/Tools/interface/Analysis.h"
 
 #include "HLTPathsAllHad.h"
 #include "L1TriggersAllHad.h"
@@ -23,7 +23,7 @@
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 
 std::string inputList_;

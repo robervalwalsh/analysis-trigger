@@ -4,11 +4,11 @@
 
 #include "L1TriggersAllHad.h"
 
-#include "Analysis/Core/interface/Analysis.h"
+#include "Analysis/Tools/interface/Analysis.h"
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
 
 
 bool LowMassAllHad(Analysis & );

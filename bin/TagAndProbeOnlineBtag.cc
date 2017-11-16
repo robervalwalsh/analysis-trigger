@@ -10,12 +10,14 @@
 #include "TChain.h"
 #include "TH1.h" 
 
-#include "Analysis/Core/interface/Analysis.h"
-#include "Analysis/Core/bin/macro_config.h"
+#include "Analysis/Tools/interface/Analysis.h"
+#include "Analysis/Tools/bin/macro_config.h"
 
 using namespace std;
 using namespace analysis;
-using namespace analysis::core;
+using namespace analysis::tools;
+
+float GetBTag(const Jet & jet, const std::string & algo);
 
 // =============================================================================================   
 int main(int argc, char * argv[])
@@ -53,8 +55,10 @@ int main(int argc, char * argv[])
    
    // histograms
    std::map<std::string, TH1F*> h1;
-   int nbins = 12+7+6+2;
-   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,450,500,550,600,800,1000};
+//   int nbins = 12+7+6+2;
+//   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,450,500,550,600,800,1000};
+   int nbins = 12+7+5;
+   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,500,700,1000};
    
    h1["pt_tag"  ]      = new TH1F("pt_tag"      , "" , 100, 0   , 1000);
    h1["pt_tag_var"]    = new TH1F("pt_tag_var"  , "" , nbins, ptbins);
@@ -81,7 +85,6 @@ int main(int argc, char * argv[])
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
    
    int nsel[10] = { };
-   int nmatch[10] = { };
 
    if ( nevtmax_ < 0 ) nevtmax_ = analysis.size();
    for ( int i = 0 ; i < nevtmax_ ; ++i )
@@ -130,7 +133,7 @@ int main(int argc, char * argv[])
       for ( int j = 0; j < njetsmin_; ++j )
       {
          Jet * jet = selectedJets[j];
-         if ( jet->pt() < jetsptmin_[j] || jet->pt() > jetsptmax_[j] || fabs(jet->eta()) > jetsetamax_[j] || jet->btag() < jetsbtagmin_[j] )
+         if ( jet->pt() < jetsptmin_[j] || jet->pt() > jetsptmax_[j] || fabs(jet->eta()) > jetsetamax_[j] || GetBTag(*jet,btagalgo_) < jetsbtagmin_[j] )
          {
             goodEvent = false;
             break;
@@ -277,9 +280,27 @@ int main(int argc, char * argv[])
 // //   }
    
    
+   std::cout << "SingleJetTriggerAnalysis: program finished" << std::endl;
    
    
       
    
 } //end main
 
+float GetBTag(const Jet & jet, const std::string & algo)
+{
+   float btag;
+   if ( btagalgo_ == "csvivf" || btagalgo_ == "csv" )
+   {
+      btag = jet.btag("btag_csvivf");
+   }
+   else if ( btagalgo_ == "deepcsv" )
+   {
+      btag = jet.btag("btag_deepb") + jet.btag("btag_deepbb");
+   }
+   else
+   {
+      btag = -9999;
+   }
+   return btag;
+}
