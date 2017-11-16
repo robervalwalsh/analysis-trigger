@@ -43,7 +43,7 @@ int main(int argc, char * argv[])
    {
       analysis.addTree<TriggerObject> (obj,Form("%s/%s/%s",treePath_.c_str(),triggerObjDir_.c_str(),obj.c_str()));
    }
-
+   
    // JSON for data   
    if( !isMC_ ) analysis.processJsonFile(json_);
    
@@ -54,16 +54,16 @@ int main(int argc, char * argv[])
    std::map<std::string, TH1F*> h1;
    
    h1["n"]   = new TH1F("n"   , "" ,   5,  0   ,   5  );
-   h1["pt"]  = new TH1F("pt"  , "" , 100,  0   ,  1000  );
-   h1["eta"] = new TH1F("eta" , "" ,  12, -2.4 ,   2.4);
-   h1["phi"] = new TH1F("phi" , "" ,  16, -3.2 ,   3.2);
+   h1["pt"]  = new TH1F("pt"  , "" , 500,  0   ,  1000  );
+   h1["eta"] = new TH1F("eta" , "" , 100, -2.5 ,   2.5);
+   h1["phi"] = new TH1F("phi" , "" , 128, -3.2 ,   3.2);
    
    if ( psweight_ )
    {
        h1["n_psw"]   = new TH1F("n_psw"   , "" ,   5,  0   ,   5  );
-       h1["pt_psw"]  = new TH1F("pt_psw"  , "" , 100,  0   ,  1000  );
-       h1["eta_psw"] = new TH1F("eta_psw" , "" ,  12, -2.4 ,   2.4);
-       h1["phi_psw"] = new TH1F("phi_psw" , "" ,  16, -3.2 ,   3.2);
+       h1["pt_psw"]  = new TH1F("pt_psw"  , "" , 500,  0   ,  1000  );
+       h1["eta_psw"] = new TH1F("eta_psw" , "" , 100, -2.5 ,   2.5);
+       h1["phi_psw"] = new TH1F("phi_psw" , "" , 128, -3.2 ,   3.2);
    
    }
 
@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
       // Object - std::shared_ptr< Collection<Object> >
       
       // Jets
-      auto slimmedJets = analysis.collection<Jet>("Jets");
+      auto slimmedJets = analysis.collection<Jet>("Jets");      
       // selection of jets
       std::vector<Jet *> selectedLooseJets;
       for ( int j = 0 ; j < slimmedJets->size() ; ++j )
@@ -108,13 +108,13 @@ int main(int argc, char * argv[])
       for ( int j = 0 ; j < (int)selectedLooseJets.size() ; ++j )
       {
          Jet * jet = selectedLooseJets.at(j);
-         if ( jet->pt() > jetsptmin_[0] && fabs(jet->eta()) < jetsetamax_[0] )
+         if ( jet->pt() > jetsptmin_[0] && jet->pt() <= jetsptmax_[0] && fabs(jet->eta()) < jetsetamax_[0] )
             selectedJets.push_back(jet);
       }
       if ( (int)selectedJets.size() < njetsmin_ ) continue;
       
       Jet * jet = selectedJets.at(0);
-
+      
       
 // Trigger analysis
 // ==================================      
@@ -138,16 +138,19 @@ int main(int argc, char * argv[])
       
       // Emulation with L1T candidate
       // L1TJets
-      auto l1tjets = analysis.collection<L1TJet>("L1TJets");
       // selection of jets
       std::vector<L1TJet *> selectedL1TJets;
-      for ( int j = 0 ; j < l1tjets->size() ; ++j )
+      if ( l1tjetsnmin_ > 0 )
       {
-         L1TJet * l1tjet = &(l1tjets->at(j));
-         if ( l1tjet->pt() > l1tjetsptmin_[0] && fabs(l1tjet->eta()) < l1tjetsetamax_[0] )
-            selectedL1TJets.push_back(l1tjet);
+         auto l1tjets = analysis.collection<L1TJet>("L1TJets");
+         for ( int j = 0 ; j < l1tjets->size() ; ++j )
+         {
+            L1TJet * l1tjet = &(l1tjets->at(j));
+            if ( l1tjet->pt() > l1tjetsptmin_[0] && fabs(l1tjet->eta()) < l1tjetsetamax_[0] )
+               selectedL1TJets.push_back(l1tjet);
+         }
+         if ( (int)selectedL1TJets.size() < l1tjetsnmin_ ) continue;
       }
-      if ( (int)selectedL1TJets.size() < l1tjetsnmin_ ) continue;
       
       // Emulation with trigger objects
       std::vector<TriggerObject *> selectedL1Jets;
@@ -176,8 +179,9 @@ int main(int argc, char * argv[])
       if ( matchonoff_ )
       {
          bool l1match = false;
-         if ( l1tjetsnmin_ > 0 )  l1match = MatchOnlineOffline(*(jet),selectedL1TJets);
-         else                     l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
+         if ( ntomin_[0] > 0 )       l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
+         else if (l1tjetsnmin_ > 0)  l1match = MatchOnlineOffline(*(jet),selectedL1TJets);
+         else l1match = true;
          if ( !l1match ) continue;
          
          bool l2match = MatchOnlineOffline(*(jet),selectedL2Jets);
@@ -207,6 +211,8 @@ int main(int argc, char * argv[])
    }
    
    hout.Close();
+   
+   std::cout << "SingleJetTriggerAnalysis: program finished" << std::endl;
    
 } //end main
 
