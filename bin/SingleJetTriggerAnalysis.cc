@@ -162,24 +162,24 @@ int main(int argc, char * argv[])
          // select L1 objects
          auto l1jets = analysis.collection<TriggerObject>(triggerObjects_[0]);
          selectedL1Jets = SelectTriggerObjects(l1jets,0);
-         if ( (int)selectedL1Jets.size() < ntomin_[0]  ) continue;
+         if ( (int)selectedL1Jets.size() < tonmin_[0]  ) continue;
          
          // select L2 objects
          auto l2jets = analysis.collection<TriggerObject>(triggerObjects_[1]);
          selectedL2Jets = SelectTriggerObjects(l2jets,1);
-         if ( (int)selectedL2Jets.size() < ntomin_[1]  ) continue;
+         if ( (int)selectedL2Jets.size() < tonmin_[1]  ) continue;
       
          // select L3 objects
          auto l3jets = analysis.collection<TriggerObject>(triggerObjects_[2]);
          selectedL3Jets = SelectTriggerObjects(l3jets,0);
-         if ( (int)selectedL3Jets.size() < ntomin_[2]  ) continue;
+         if ( (int)selectedL3Jets.size() < tonmin_[2]  ) continue;
       }
       
       // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
       if ( matchonoff_ )
       {
          bool l1match = false;
-         if ( ntomin_[0] > 0 )       l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
+         if ( tonmin_[0] > 0 )       l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
          else if (l1tjetsnmin_ > 0)  l1match = MatchOnlineOffline(*(jet),selectedL1TJets);
          else l1match = true;
          if ( !l1match ) continue;
@@ -227,7 +227,7 @@ std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collect
    for ( int j = 0; j < tos->size() ; ++j )
    {
       TriggerObject * to = &tos->at(j);
-      if ( ntomin_[idx] < 1 )
+      if ( tonmin_[idx] < 1 )
       {
          seltos.push_back(to);
       }
