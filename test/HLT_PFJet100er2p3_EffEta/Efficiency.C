@@ -33,7 +33,6 @@ int Efficiency()
       eff[era] -> SetMarkerColor(colors[era]);
       eff[era] -> SetLineColor(colors[era]);
       eff[era] -> SetName(Form("eff_%s",era.c_str()));
-      legend-> AddEntry(eff[era]->GetName(),era.c_str(),"ep");
       mg -> Add(eff[era]);
    }
    
@@ -48,6 +47,9 @@ int Efficiency()
    mg -> GetXaxis()->SetRangeUser(-2.5,2.5);
    mg -> GetXaxis()->SetTitle("jet eta");
    mg -> GetYaxis()->SetTitle("efficiency");
+
+   for ( auto & e : eff )
+      legend-> AddEntry(e.second->GetName(),e.first.c_str(),"ep");
 
    legend -> Draw();
    

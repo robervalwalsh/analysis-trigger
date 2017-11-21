@@ -29,11 +29,10 @@ int Efficiency()
       TH1F * h_num = (TH1F*) tf -> Get("pt_num");
       eff[era] = new TGraphAsymmErrors(h_num,h_den,"cl=0.683 b(1,1) mode");
       eff[era] -> SetMarkerStyle(20);
-      eff[era] -> SetMarkerSize(0.8);
+      eff[era] -> SetMarkerSize(1.0);
       eff[era] -> SetMarkerColor(colors[era]);
       eff[era] -> SetLineColor(colors[era]);
       eff[era] -> SetName(Form("eff_%s",era.c_str()));
-      legend-> AddEntry(eff[era]->GetName(),era.c_str(),"ep");
       mg -> Add(eff[era]);
    }
    
@@ -48,6 +47,9 @@ int Efficiency()
    mg -> GetXaxis()->SetRangeUser(50,500);
    mg -> GetXaxis()->SetTitle("jet pt (GeV)");
    mg -> GetYaxis()->SetTitle("efficiency");
+
+   for ( auto & e : eff )
+      legend-> AddEntry(e.second->GetName(),e.first.c_str(),"ep");
 
    legend -> Draw();
    
