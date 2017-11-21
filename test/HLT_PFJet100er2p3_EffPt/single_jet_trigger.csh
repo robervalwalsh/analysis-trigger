@@ -1,6 +1,6 @@
 #!/bin/csh -f
 
-if ( $#argv < 6 ) then
+if ( $#argv < 7 ) then
    echo Need to give, config template, era, dataset, number of splits, trigger, ref trigger, json
    exit
 endif
