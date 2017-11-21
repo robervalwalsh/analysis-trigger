@@ -42,7 +42,16 @@ int main(int argc, char * argv[])
    // Trigger path info
    analysis.triggerResults(Form("%s/%s",treePath_.c_str(),triggerCol_.c_str()));
    // Trigger objects
-   for ( auto & obj : triggerObjects_ )
+   // merge nominal and reference
+   std::vector <std::string> toall;
+   toall.reserve( triggerObjects_.size() + triggerObjectsRef_.size() ); // preallocate memory
+   toall.insert( toall.end(), triggerObjects_.begin(), triggerObjects_.end() );
+   toall.insert( toall.end(), triggerObjectsRef_.begin(), triggerObjectsRef_.end() );
+   // remove duplicates
+   sort( toall.begin(), toall.end() );
+   toall.erase( unique( toall.begin(), toall.end() ), toall.end() );
+   
+   for ( auto & obj : toall )
    {
       analysis.addTree<TriggerObject> (obj,Form("%s/%s/%s",treePath_.c_str(),triggerObjDir_.c_str(),obj.c_str()));
    }
@@ -62,12 +71,11 @@ int main(int argc, char * argv[])
    h1["eta_num"] = new TH1F("eta_num" , "" , 100, -2.5 ,   2.5);
    h1["phi_num"] = new TH1F("phi_num" , "" , 128, -3.2 ,   3.2);
    
-   // corresponding denumerator histograms
-   for ( auto & h : h1 )
-   {
-      std::string hname = (std::string) TString(h.second -> GetName()).ReplaceAll("num","dem");
-      h1[hname] = (TH1F*) h.second -> Clone(hname.c_str());
-   }
+   h1["n_den"]   = new TH1F("n_den"   , "" ,   5,  0   ,   5  );
+   h1["pt_den"]  = new TH1F("pt_den"  , "" , 500,  0   ,  1000  );
+   h1["eta_den"] = new TH1F("eta_den" , "" , 100, -2.5 ,   2.5);
+   h1["phi_den"] = new TH1F("phi_den" , "" , 128, -3.2 ,   3.2);
+   
    
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
@@ -117,90 +125,18 @@ int main(int argc, char * argv[])
       Jet * jet = selectedJets.at(0);
       
       
-      
-      
 // Trigger analysis, reference trigger (denominator)
-// =================================================   
+// =================================================         
       bool refAccept = TriggerAccept(analysis,*jet,"ref");
-      
       if ( ! refAccept ) continue;
-      
-         
-//       bool hltAcceptRef = analysis.triggerResult(hltPathRef_);
-//       // see SingleJetTriggerAnalysis.cc for the usage of prescales if that is needed
-//       
-//       bool l1Accept  = true;
-//       if ( l1SeedRef_ != "" )  analysis.triggerResult(l1SeedRef_);
-//       
-//       if ( !hltAcceptRef || !l1AcceptRef ) continue; // Selecting one of the OR L1 seeds.
-//       
-//       
-//       // Emulation with L1T candidate
-//       // L1TJets
-//       // selection of jets
-//       std::vector<L1TJet *> selectedL1TJetsRef;
-//       if ( l1tjetsrefnmin_ > 0 )
-//       {
-//          auto l1tjets = analysis.collection<L1TJet>("L1TJets");
-//          for ( int j = 0 ; j < l1tjets->size() ; ++j )
-//          {
-//             L1TJet * l1tjet = &(l1tjets->at(j));
-//             if ( l1tjet->pt() > l1tjetsrefptmin_[0] && fabs(l1tjet->eta()) < l1tjetsrefetamax_[0] )
-//                selectedL1TJets.push_back(l1tjet);
-//          }
-//          if ( (int)selectedL1TJetsRef.size() < l1tjetsrefnmin_ ) continue;
-//       }
-//       
-//       // Emulation with trigger objects
-//       std::vector<TriggerObject *> selectedL1JetsRef;
-//       std::vector<TriggerObject *> selectedL2JetsRef;
-//       std::vector<TriggerObject *> selectedL3JetsRef;
-//       
-//       if ( triggerObjects_.size() > 2 )
-//       {
-//          // select L1 objects
-//          auto l1jets = analysis.collection<TriggerObject>(triggerObjects_[0]);
-//          selectedL1JetsRef = SelectTriggerObjects(l1jets,0);
-//          if ( (int)selectedL1JetsRef.size() < ntomin_[0]  ) continue;
-//          
-//          // select L2 objects
-//          auto l2jets = analysis.collection<TriggerObject>(triggerObjects_[1]);
-//          selectedL2JetsRef = SelectTriggerObjects(l2jets,1);
-//          if ( (int)selectedL2JetsRef.size() < ntomin_[1]  ) continue;
-//       
-//          // select L3 objects
-//          auto l3jets = analysis.collection<TriggerObject>(triggerObjects_[2]);
-//          selectedL3JetsRef = SelectTriggerObjects(l3jets,0);
-//          if ( (int)selectedL3JetsRef.size() < ntomin_[2]  ) continue;
-//       }
-//       
-//       // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
-//       if ( matchonoff_ )
-//       {
-//          bool l1match = false;
-//          if ( ntomin_[0] > 0 )       l1match = MatchOnlineOffline(*(jet),selectedL1JetsRef);
-//          else if (l1tjetsnmin_ > 0)  l1match = MatchOnlineOffline(*(jet),selectedL1TJetsRef);
-//          else l1match = true;
-//          if ( !l1match ) continue;
-//          
-//          bool l2match = MatchOnlineOffline(*(jet),selectedL2JetsRef);
-//          if ( !l2match ) continue;
-//          
-//          bool l3match = MatchOnlineOffline(*(jet),selectedL3JetsRef);
-//          if ( !l3match ) continue;
-//       }
       
       // fill histograms
       h1["pt_den" ]     -> Fill(jet->pt() );
       h1["eta_den"]     -> Fill(jet->eta());
       h1["phi_den"]     -> Fill(jet->phi());
       
-      
-      
-      
 // // Trigger analysis, nominal trigger (numerator)
 // // =================================================    
-      
       bool nomAccept = TriggerAccept(analysis,*jet,"nom");
       
       if ( ! nomAccept ) continue;
@@ -209,93 +145,7 @@ int main(int argc, char * argv[])
       h1["pt_num" ]     -> Fill(jet->pt() );
       h1["eta_num"]     -> Fill(jet->eta());
       h1["phi_num"]     -> Fill(jet->phi());
-
       
-        
-//       bool hltAccept = analysis.triggerResult(hltPath_);
-//       int hltPs = 1;
-//       
-//       if ( psweight_ ) hltPs = analysis.triggerPrescale(hltPath_);
-// 
-//       bool l1Accept  = true;
-//       int l1Ps = 1;
-//       if ( l1Seed_ != "" )
-//       {
-//          analysis.triggerResult(l1Seed_);
-//          if ( psweight_ ) l1Ps  = analysis.triggerPrescale(l1Seed_);
-//       }
-//       
-//       int psw = l1Ps * hltPs;
-//       
-//       if ( !hltAccept || !l1Accept ) continue; // Selecting one of the OR L1 seeds.
-//       
-//       
-//       // Emulation with L1T candidate
-//       // L1TJets
-//       // selection of jets
-//       std::vector<L1TJet *> selectedL1TJets;
-//       if ( l1tjetsnmin_ > 0 )
-//       {
-//          auto l1tjets = analysis.collection<L1TJet>("L1TJets");
-//          for ( int j = 0 ; j < l1tjets->size() ; ++j )
-//          {
-//             L1TJet * l1tjet = &(l1tjets->at(j));
-//             if ( l1tjet->pt() > l1tjetsptmin_[0] && fabs(l1tjet->eta()) < l1tjetsetamax_[0] )
-//                selectedL1TJets.push_back(l1tjet);
-//          }
-//          if ( (int)selectedL1TJets.size() < l1tjetsnmin_ ) continue;
-//       }
-//       
-//       // Emulation with trigger objects
-//       std::vector<TriggerObject *> selectedL1Jets;
-//       std::vector<TriggerObject *> selectedL2Jets;
-//       std::vector<TriggerObject *> selectedL3Jets;
-//       
-//       if ( triggerObjects_.size() > 2 )
-//       {
-//          // select L1 objects
-//          auto l1jets = analysis.collection<TriggerObject>(triggerObjects_[0]);
-//          selectedL1Jets = SelectTriggerObjects(l1jets,0);
-//          if ( (int)selectedL1Jets.size() < ntomin_[0]  ) continue;
-//          
-//          // select L2 objects
-//          auto l2jets = analysis.collection<TriggerObject>(triggerObjects_[1]);
-//          selectedL2Jets = SelectTriggerObjects(l2jets,1);
-//          if ( (int)selectedL2Jets.size() < ntomin_[1]  ) continue;
-//       
-//          // select L3 objects
-//          auto l3jets = analysis.collection<TriggerObject>(triggerObjects_[2]);
-//          selectedL3Jets = SelectTriggerObjects(l3jets,0);
-//          if ( (int)selectedL3Jets.size() < ntomin_[2]  ) continue;
-//       }
-//       
-//       // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
-//       if ( matchonoff_ )
-//       {
-//          bool l1match = false;
-//          if ( ntomin_[0] > 0 )       l1match = MatchOnlineOffline(*(jet),selectedL1Jets);
-//          else if (l1tjetsnmin_ > 0)  l1match = MatchOnlineOffline(*(jet),selectedL1TJets);
-//          else l1match = true;
-//          if ( !l1match ) continue;
-//          
-//          bool l2match = MatchOnlineOffline(*(jet),selectedL2Jets);
-//          if ( !l2match ) continue;
-//          
-//          bool l3match = MatchOnlineOffline(*(jet),selectedL3Jets);
-//          if ( !l3match ) continue;
-//       }
-//       
-//       // fill histograms
-//       h1["pt" ]     -> Fill(jet->pt() );
-//       h1["eta"]     -> Fill(jet->eta());
-//       h1["phi"]     -> Fill(jet->phi());
-//       if ( psweight_ )
-//       {
-//          h1["pt_psw" ] -> Fill(jet->pt() , psw);
-//          h1["eta_psw"] -> Fill(jet->eta(), psw);
-//          h1["phi_psw"] -> Fill(jet->phi(), psw);
-//       }
-//       
       
    } // end of event loop
    
@@ -322,12 +172,20 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
    std::vector<float> l1tptmin = l1tjetsptmin_;
    std::vector<float> l1tetamax = l1tjetsetamax_;
    
+   std::vector<std::string> tos = triggerObjects_;
    
    int  * tonmin = tonmin_;
    std::vector<float> * toptmin = toptmin_;
    std::vector<float> * toetamax = toetamax_;
    
    
+   if ( trigemul_ && type == "nom" )
+   {
+      // emulating on top of the reference trigger, kind o f redundant but will keep it
+      hlt = hltPathRef_;
+      l1 = l1SeedRef_;
+      tos = triggerObjectsRef_;
+   }
    if ( type == "ref" )
    {
       hlt = hltPathRef_;
@@ -338,8 +196,8 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
       tonmin = torefnmin_;
       toptmin = torefptmin_;
       toetamax = torefetamax_;
+      tos = triggerObjectsRef_;
    }
-   
    
 // Trigger analysis, reference trigger (denominator)
 // =================================================      
@@ -350,7 +208,6 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
    if ( l1 != "" )  analysis.triggerResult(l1);
    
    if ( !hltAccept || !l1Accept ) return false; // Selecting one of the OR L1 seeds.
-   
    
    // Emulation with L1T candidate
    // L1TJets
@@ -373,24 +230,24 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
    std::vector<TriggerObject *> selectedL2Jets;
    std::vector<TriggerObject *> selectedL3Jets;
    
-   if ( triggerObjects_.size() > 2 )
+   if ( tos.size() > 2 )
    {
       // select L1 objects
-      auto l1jets = analysis.collection<TriggerObject>(triggerObjects_[0]);
+      auto l1jets = analysis.collection<TriggerObject>(tos[0]);
       selectedL1Jets = SelectTriggerObjects(l1jets,0,tonmin,toptmin,toetamax);
       if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
       
       // select L2 objects
-      auto l2jets = analysis.collection<TriggerObject>(triggerObjects_[1]);
+      auto l2jets = analysis.collection<TriggerObject>(tos[1]);
       selectedL2Jets = SelectTriggerObjects(l2jets,1,tonmin,toptmin,toetamax);
       if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
    
       // select L3 objects
-      auto l3jets = analysis.collection<TriggerObject>(triggerObjects_[2]);
+      auto l3jets = analysis.collection<TriggerObject>(tos[2]);
       selectedL3Jets = SelectTriggerObjects(l3jets,2,tonmin,toptmin,toetamax);
       if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
    }
-   
+
    // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
    if ( matchonoff_ )
    {
@@ -406,7 +263,6 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
       bool l3match = MatchOnlineOffline(jet,selectedL3Jets);
       if ( !l3match ) return false;
    }
-   
    
    return true;
 
