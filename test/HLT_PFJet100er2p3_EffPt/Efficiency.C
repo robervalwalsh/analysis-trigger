@@ -1,34 +1,60 @@
 int Efficiency()
 {
-   TFile * f_ref = new TFile("histograms_pfjet_jetht_2017E_hlt60_refhlt60_pt60to500_all.root","OLD");
-   TFile * f_nom = new TFile("histograms_pfjet_jetht_2017E_hlt100_refhlt60_pt60to500_all.root","OLD");
-   
-   TH1F * h_ref = (TH1F*) f_ref -> Get("pt");
-   TH1F * h_nom = (TH1F*) f_nom -> Get("pt");
-   
-   for ( int i = 0 ; i < 300 ; ++i )
+   std::vector<std::string> erasList = {"2017C","2017D","2017E","2017F","2017C-v1","2017C-v2","2017C-v3","2017E-v1","2017E-v2"};
+   std::vector<Color_t> colorsList = {kBlack,kRed,kBlue,kMagenta,kBlack,kBlack+2,kGray,kBlue,kCyan};
+   std::map<std::string,Color_t> colors;
+   std::map<std::string, std::string> files;
+   for ( auto & era : erasList )
    {
-      if ( h_ref->GetBinContent(i+1) < h_nom->GetBinContent(i+1) )
+      auto i = &era - &erasList[0];
+      colors[era] = colorsList[i];
+      std::string myfile = Form("histograms_pfjet_jetht_%s_HLT_PFJet100er2p3_refHLT_PFJet60_v_all.root",era.c_str());
+      if (std::ifstream(myfile))
       {
-         h_ref->SetBinContent(i+1, h_nom->GetBinContent(i+1));
-         h_ref->SetBinError(i+1, h_nom->GetBinError(i+1));
-         std::cout << "bin " << i+1 << ": " <<  h_ref->GetBinContent(i+1) << "   " << h_nom->GetBinContent(i+1) << std::endl;
+         files[era] = myfile;
       }
-
    }
    
-   
-   
-   TGraphAsymmErrors * g_eff = new TGraphAsymmErrors(h_nom,h_ref,"cl=0.683 b(1,1) mode");
-//   TGraphAsymmErrors * g_eff = new TGraphAsymmErrors(h_ref,h_nom,"pois");
-   
    TCanvas * c1 = new TCanvas("c1","");
-   g_eff -> Draw("AP");
- 
-//   c1 -> SaveAs("eff_l1mu7.png");
+   TLegend * legend = new TLegend(0.65,0.2,0.85,0.45,"Efficiency per era");
    
-   TFile * out = new TFile("eff_2017E.root","recreate");
-   g_eff -> Write();
+   std::map< std::string, TGraphAsymmErrors *> eff;
+   TMultiGraph *mg = new TMultiGraph();
    
+   for ( auto & f : files )
+   {
+      std::string era = f.first;
+      TFile * tf = new TFile(f.second.c_str(),"old");
+      TH1F * h_den = (TH1F*) tf -> Get("pt_den");
+      TH1F * h_num = (TH1F*) tf -> Get("pt_num");
+      eff[era] = new TGraphAsymmErrors(h_num,h_den,"cl=0.683 b(1,1) mode");
+      eff[era] -> SetMarkerStyle(20);
+      eff[era] -> SetMarkerSize(0.8);
+      eff[era] -> SetMarkerColor(colors[era]);
+      eff[era] -> SetLineColor(colors[era]);
+      eff[era] -> SetName(Form("eff_%s",era.c_str()));
+      legend-> AddEntry(eff[era]->GetName(),era.c_str(),"ep");
+      mg -> Add(eff[era]);
+   }
+   
+   c1->SetGridx();
+   c1->SetGridy();
+   c1->SetTickx(1);
+   c1->SetTicky(1);
+
+   mg -> Draw("ap");
+   mg -> GetYaxis()->SetNdivisions(520);
+   mg -> GetXaxis()->SetNdivisions(520);
+   mg -> GetXaxis()->SetRangeUser(50,500);
+   mg -> GetXaxis()->SetTitle("jet pt (GeV)");
+   mg -> GetYaxis()->SetTitle("efficiency");
+
+   legend -> Draw();
+   
+   c1->Modified();
+   
+   c1 -> SaveAs("PFJet100_EffPt_eras.png");
+   
+
    return 0;
 }
