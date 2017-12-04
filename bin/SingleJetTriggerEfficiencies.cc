@@ -83,7 +83,7 @@ int main(int argc, char * argv[])
    if ( nevtmax_ < 0 ) nevtmax_ = analysis.size();
    for ( int i = 0 ; i < nevtmax_ ; ++i )
    {
-      if ( i > 0 && i%100000==0 ) std::cout << i << "  events processed! " << std::endl;
+      if ( i > 0 && i%10000==0 ) std::cout << i << "  events processed! " << std::endl;
       
       analysis.event(i);
       
@@ -126,14 +126,17 @@ int main(int argc, char * argv[])
       
       
 // Trigger analysis, reference trigger (denominator)
-// =================================================         
+// =================================================  
       bool refAccept = TriggerAccept(analysis,*jet,"ref");
       if ( ! refAccept ) continue;
       
+      float pswref = 1;
+//      if ( psweight_ ) pswref = analysis.triggerPrescale(hltPathRef_)*analysis.triggerPrescale(l1SeedRef_);
+      
       // fill histograms
-      h1["pt_den" ]     -> Fill(jet->pt() );
-      h1["eta_den"]     -> Fill(jet->eta());
-      h1["phi_den"]     -> Fill(jet->phi());
+      h1["pt_den" ]     -> Fill(jet->pt() ,pswref);
+      h1["eta_den"]     -> Fill(jet->eta(),pswref);
+      h1["phi_den"]     -> Fill(jet->phi(),pswref);
       
 // // Trigger analysis, nominal trigger (numerator)
 // // =================================================    
@@ -141,10 +144,14 @@ int main(int argc, char * argv[])
       
       if ( ! nomAccept ) continue;
       
+      float psw = 1;
+//      if ( psweight_ ) psw = analysis.triggerPrescale(hltPath_)*analysis.triggerPrescale(l1Seed_);
+      if ( psweight_ ) psw = analysis.triggerPrescale(hltPath_);
+      
       // fill histograms
-      h1["pt_num" ]     -> Fill(jet->pt() );
-      h1["eta_num"]     -> Fill(jet->eta());
-      h1["phi_num"]     -> Fill(jet->phi());
+      h1["pt_num" ]     -> Fill(jet->pt() , psw);
+      h1["eta_num"]     -> Fill(jet->eta(), psw);
+      h1["phi_num"]     -> Fill(jet->phi(), psw);
       
       
    } // end of event loop
@@ -190,7 +197,7 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
    {
       hlt = hltPathRef_;
       l1 = l1SeedRef_;
-      l1tnmin = l1tjetsnmin_;
+      l1tnmin = l1tjetsrefnmin_;
       l1tptmin = l1tjetsrefptmin_;
       l1tetamax = l1tjetsrefetamax_;
       tonmin = torefnmin_;
