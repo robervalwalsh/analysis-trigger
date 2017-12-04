@@ -1,0 +1,8 @@
+./single_jet_trigger.csh single_jet_trigger_efficiencies_example.cfg 2017C jetht 1 HLT_PFJet100er2p3 HLT_PFJet60_v json_2017.txt
+./single_jet_trigger.csh single_jet_trigger_efficiencies_example.cfg 2017D jetht 1 HLT_PFJet100er2p3 HLT_PFJet60_v json_2017.txt
+./single_jet_trigger.csh single_jet_trigger_efficiencies_example.cfg 2017E jetht 1 HLT_PFJet100er2p3 HLT_PFJet60_v json_2017.txt
+./single_jet_trigger.csh single_jet_trigger_efficiencies_example.cfg 2017F jetht 1 HLT_PFJet100er2p3 HLT_PFJet60_v json_2017.txt
+
+hadd histograms_t_zerobias_2017D_HLT_PFJet40er2p3_refHLT_ZeroBias_all.root `find NAF_SingleJetTriggerEfficiencies_pfjet_zerobias_2017D_HLT_PFJet40er2p3_refHLT_ZeroBias -name "*.root"` | grep -v 0089 | grep -v 0103
+
+hadd histograms_pfjet_jetht_2017F_HLT_PFJet100er2p3_refHLT_PFJet60_v_all.root `find NAF_SingleJetTriggerEfficiencies_pfjet_jetht_2017F_HLT_PFJet100er2p3_refHLT_PFJet60_v -name "*.root"`
