@@ -53,6 +53,10 @@ hadd histograms_2017E-v2_tep_40to1000_all.root histograms_2017E-v2_tep_*.root
 hadd histograms_2017F_tep_40to1000_all.root histograms_2017F_tep_*.root
 hadd histograms_2017E_tep_40to1000_all.root histograms_2017E-v*_tep_*.root
 
+hadd histograms_2017C_tep_40to160_all.root histograms_2017C-v*_tep_40to160_all.root
+hadd histograms_2017C_tep_160to220_all.root histograms_2017C-v*_tep_160to220_all.root
+hadd histograms_2017C_tep_220to400_all.root histograms_2017C-v*_tep_220to400_all.root
+hadd histograms_2017C_tep_400to1000_all.root histograms_2017C-v*_tep_400to1000_all.root
 
 
 root -l -b -q  'Efficiency.C("2017C-v1")'
@@ -64,5 +68,35 @@ root -l -b -q  'Efficiency.C("2017E-v1")'
 root -l -b -q  'Efficiency.C("2017E-v2")'
 root -l -b -q  'Efficiency.C("2017F")'
 root -l -b -q  'Efficiency.C("2017E")'
+
+root -l -b -q  'EfficiencyBtag.C("2017C","40to160")'
+root -l -b -q  'EfficiencyBtag.C("2017D","40to160")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v1","40to160")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v2","40to160")'
+root -l -b -q  'EfficiencyBtag.C("2017F","40to160")'
+
+root -l -b -q  'EfficiencyBtag.C("2017C","160to220")'
+root -l -b -q  'EfficiencyBtag.C("2017D","160to220")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v1","160to220")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v2","160to220")'
+root -l -b -q  'EfficiencyBtag.C("2017F","160to220")'
+
+root -l -b -q  'EfficiencyBtag.C("2017C","220to400")'
+root -l -b -q  'EfficiencyBtag.C("2017D","220to400")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v1","220to400")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v2","220to400")'
+root -l -b -q  'EfficiencyBtag.C("2017F","220to400")'
+
+root -l -b -q  'EfficiencyBtag.C("2017C","400to1000")'
+root -l -b -q  'EfficiencyBtag.C("2017D","400to1000")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v1","400to1000")'
+root -l -b -q  'EfficiencyBtag.C("2017E-v2","400to1000")'
+root -l -b -q  'EfficiencyBtag.C("2017F","400to1000")'
+
+root -l -b -q 'EffPlotsBtag.C("40to160")';
+root -l -b -q 'EffPlotsBtag.C("160to220")';
+root -l -b -q 'EffPlotsBtag.C("220to400")';
+root -l -b -q 'EffPlotsBtag.C("400to1000")';
+
 
 root -l -b -q  'Efficiency.C("2017CDE")'
