@@ -38,13 +38,13 @@ int main(int argc, char * argv[])
    Analysis analysis(inputlist_);
    
    // Jets
-   analysis.addTree<Jet> ("Jets","MssmHbb/Events/slimmedJetsPuppi");
+   analysis.addTree<Jet> ("Jets",jetsCol_);
    // Trigger path info
-   analysis.triggerResults("MssmHbb/Events/TriggerResults");
+   analysis.triggerResults(triggerCol_);
    // Trigger objects
    for ( auto & obj : triggerObjects_ )
    {
-      analysis.addTree<TriggerObject> (obj,Form("MssmHbb/Events/slimmedPatTrigger/%s",obj.c_str()));
+      analysis.addTree<TriggerObject> (obj,Form("%s/%s",triggerObjDir_.c_str(),obj.c_str()));
    }
 
    // JSON for data   
@@ -55,6 +55,7 @@ int main(int argc, char * argv[])
    
    // histograms
    std::map<std::string, TH1F*> h1;
+   std::map<std::string, TH2F*> h2;
 //   int nbins = 12+7+6+2;
 //   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,450,500,550,600,800,1000};
    int nbins = 12+7+5;
@@ -67,13 +68,25 @@ int main(int argc, char * argv[])
    h1["btag_tag"]      = new TH1F("btag_tag"    , "" , 200, 0   , 1   );
    h1["btaglog_tag"]   = new TH1F("btaglog_tag" , "" , 20 , 0   , 10  );
    
+   h1["qglikelihood_tag"] = new TH1F("qglikelihood_tag","",100, 0,1);
+   h1["qglikelihood_tag0p8"] = new TH1F("qglikelihood_tag0p8","",100, 0,1);
+   h1["qglikelihood_tag_probe0p8"] = new TH1F("qglikelihood_tag_probe0p8","",100, 0,1);
+   
    h1["pt_probe_den"  ]    = new TH1F("pt_probe_den"      , "" , 100, 0   , 1000);
    h1["pt_probe_den_var"]  = new TH1F("pt_probe_den_var"  , "" , nbins, ptbins);
    h1["eta_probe_den" ]    = new TH1F("eta_probe_den"     , "" , 11 , -2.2, 2.2 );
    h1["phi_probe_den" ]    = new TH1F("phi_probe_den"     , "" , 16,  -3.2, 3.2 );
    h1["btag_probe_den"]    = new TH1F("btag_probe_den"    , "" , 200, 0   , 1   );
    h1["btaglog_probe_den"] = new TH1F("btaglog_probe_den" , "" , 20 , 0   , 10  );
+   
+   
+   h1["delta_pt"] = new TH1F("delta_pt","", 100, 0, 1);
+   h1["delta_phi"] = new TH1F("delta_phi","", 320, 0, 3.2);
 
+   h1["qglikelihood_probe_den"] = new TH1F("qglikelihood_probe_den","",100, 0,1);
+   h1["qglikelihood_probe_den_tag0p8"] = new TH1F("qglikelihood_probe_den_tag0p8","",100, 0,1);
+   h1["qglikelihood_probe_den_0p8"] = new TH1F("qglikelihood_probe_den_0p8","",100, 0,1);
+   
    h1["pt_probe_num"  ]    = new TH1F("pt_probe_num"      , "" , 100, 0   , 1000);
    h1["pt_probe_num_var"]  = new TH1F("pt_probe_num_var"  , "" , nbins, ptbins);
    h1["eta_probe_num" ]    = new TH1F("eta_probe_num"     , "" , 11 , -2.2, 2.2 );
@@ -81,6 +94,11 @@ int main(int argc, char * argv[])
    h1["btag_probe_num"]    = new TH1F("btag_probe_num"    , "" , 200, 0   , 1   );
    h1["btaglog_probe_num"] = new TH1F("btaglog_probe_num" , "" , 20 , 0   , 10  );
       
+   h1["qglikelihood_probe_num"] = new TH1F("qglikelihood_probe_num","",100, 0,1);
+   
+   
+   h2["qglikelihood_tag_x_probe_den"] = new TH2F("qglikelihood_tag_x_probe_den","",200, 0,1,200, 0,1);
+   
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
    
@@ -146,6 +164,8 @@ int main(int argc, char * argv[])
       
       ++nsel[2];
       
+      float delta_phi = -10;
+      
       // deltaR and deltaPhi
       for ( int j1 = 0; j1 < njetsmin_-1; ++j1 )
       {
@@ -153,8 +173,9 @@ int main(int argc, char * argv[])
          for ( int j2 = j1+1; j2 < njetsmin_; ++j2 )
          {
             const Jet & jet2 = *selectedJets[j2];
-            if ( jet1.deltaR(jet2) < drmin_ ) goodEvent = false;
-            if ( jet1.deltaPhi(jet2) < dphimin_ ) goodEvent = false;
+            if ( fabs(jet1.deltaR(jet2)) < drmin_ ) goodEvent = false;
+            if ( fabs(jet1.deltaPhi(jet2)) < dphimin_ ) goodEvent = false;
+            delta_phi = fabs(jet1.deltaPhi(jet2));
          }
       }
       
@@ -196,6 +217,26 @@ int main(int argc, char * argv[])
       h1["btag_probe_den"]    -> Fill(selectedJets[0]->btag());
       h1["btaglog_probe_den"] -> Fill(-log(1-selectedJets[0]->btag()));
       
+      h1["delta_pt"] -> Fill((selectedJets[0]->pt()-selectedJets[1]->pt())/selectedJets[0]->pt());
+      h1["delta_phi"] -> Fill(delta_phi);
+
+      
+      h1["qglikelihood_tag"] -> Fill(selectedJets[1]->qgLikelihood());
+      h1["qglikelihood_probe_den"] -> Fill(selectedJets[0]->qgLikelihood());
+      h2["qglikelihood_tag_x_probe_den"] -> Fill(selectedJets[1]->qgLikelihood(),selectedJets[0]->qgLikelihood()); 
+      
+      if ( selectedJets[1]->qgLikelihood() > 0.8 )
+      {
+         h1["qglikelihood_tag0p8"] -> Fill(selectedJets[1]->qgLikelihood());
+         h1["qglikelihood_probe_den_tag0p8"] -> Fill(selectedJets[0]->qgLikelihood());
+      }
+       
+      if ( selectedJets[0]->qgLikelihood() > 0.8 )
+      {
+         h1["qglikelihood_tag_probe0p8"] -> Fill(selectedJets[1]->qgLikelihood());
+         h1["qglikelihood_probe_den_0p8"] -> Fill(selectedJets[0]->qgLikelihood());
+      }
+       
       
       // is probe jet matched?
       bool probematched[10] = {true,true,true,true,true,true,true,true,true,true};
@@ -218,6 +259,7 @@ int main(int argc, char * argv[])
       h1["phi_probe_num" ]    -> Fill(selectedJets[0]->phi() );
       h1["btag_probe_num"]    -> Fill(selectedJets[0]->btag());
       h1["btaglog_probe_num"] -> Fill(-log(1-selectedJets[0]->btag()));
+      h1["qglikelihood_probe_num"] -> Fill(selectedJets[0]->qgLikelihood());
       
 //            std::cout << "oioi - end" << std::endl;
 //            std::cout << "oioi ============= " << std::endl;
@@ -230,6 +272,11 @@ int main(int argc, char * argv[])
    {
       ih1.second -> Write();
    }
+   for (auto & ih2 : h2)
+   {
+      ih2.second -> Write();
+   }
+   
    
    hout.Close();
    
