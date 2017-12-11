@@ -62,6 +62,9 @@ int main(int argc, char * argv[])
 //   double ptbins[31] = {10,15,20,25,30,35,40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,500,700,1000};
    double ptbins[31] = {10,15,20,25,30,35,40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,320,380,450,550,700,1000};
    
+   h1["n_jets"]        = new TH1F("n_jets"      , "" , 20 , 0   , 20  );
+   h1["pt_jet3"]       = new TH1F("pt_jet3"     , "" ,100 , 0   , 1000  );
+   
    h1["pt_tag"  ]      = new TH1F("pt_tag"      , "" , 100, 0   , 1000);
    h1["pt_tag_var"]    = new TH1F("pt_tag_var"  , "" , nbins, ptbins);
    h1["eta_tag" ]      = new TH1F("eta_tag"     , "" , 11 , -2.2, 2.2 );
@@ -100,6 +103,9 @@ int main(int argc, char * argv[])
    
    h2["qglikelihood_tag_x_probe_den"] = new TH2F("qglikelihood_tag_x_probe_den","",200, 0,1,200, 0,1);
    
+   
+   
+   
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
    
@@ -133,6 +139,7 @@ int main(int argc, char * argv[])
       std::vector<Jet *> selectedJets;
       for ( int j = 0 ; j < slimmedJets->size() ; ++j )
       {
+         if ( slimmedJets->at(j).pt() < 20. ) continue;
          if ( jetsid_ == "TIGHT" ) // LOOSE is default if TIGHT not given
          {
             if ( slimmedJets->at(j).idTight() ) selectedJets.push_back(&slimmedJets->at(j));
@@ -142,7 +149,15 @@ int main(int argc, char * argv[])
             if ( slimmedJets->at(j).idLoose() ) selectedJets.push_back(&slimmedJets->at(j));
          }
       }
-      if ( (int)selectedJets.size() < njetsmin_ ) continue;
+//      if ( (int)selectedJets.size() < njetsmin_ || (int)selectedJets.size() > 3 ) continue;
+      if ( (int)selectedJets.size() < njetsmin_  ) continue;
+      
+      if ( (int)selectedJets.size() > njetsmin_ )
+      {
+//         if ( selectedJets[njetsmin_]->pt() > jetsptmin_[0] ) continue;
+         if ( selectedJets[njetsmin_]->pt() > 30 ) continue;
+      }
+      
       
 //      std::cout << "oioi - jet id" << std::endl;
       
@@ -203,6 +218,11 @@ int main(int argc, char * argv[])
       
       ++nsel[4];
      
+      h1["n_jets"] -> Fill(selectedJets.size());
+      if ( (int)selectedJets.size() > njetsmin_ )
+      {
+         h1["pt_jet3"] -> Fill( selectedJets[njetsmin_]->pt() );
+      }
       // fill histograms for tag jet 
       h1["pt_tag"  ]    -> Fill(selectedJets[1]->pt()  );
       h1["pt_tag_var"]  -> Fill(selectedJets[1]->pt()  );
