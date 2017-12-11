@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
       
       float delta_phi = -10;
       
-      // deltaR and deltaPhi
+      // deltaR and deltaPhi and imbalance
       for ( int j1 = 0; j1 < njetsmin_-1; ++j1 )
       {
          const Jet & jet1 = *selectedJets[j1];
@@ -177,6 +177,7 @@ int main(int argc, char * argv[])
             if ( fabs(jet1.deltaR(jet2)) < drmin_ ) goodEvent = false;
             if ( fabs(jet1.deltaPhi(jet2)) < dphimin_ ) goodEvent = false;
             delta_phi = fabs(jet1.deltaPhi(jet2));
+            if ( fabs(jet1.pt()-jet2.pt())/jet1.pt() > ptimbalmax_ ) goodEvent = false;
          }
       }
       
