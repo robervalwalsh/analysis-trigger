@@ -58,8 +58,8 @@ int main(int argc, char * argv[])
    std::map<std::string, TH2F*> h2;
 //   int nbins = 12+7+6+2;
 //   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,450,500,550,600,800,1000};
-   int nbins = 12+7+5;
-   double ptbins[28] = {40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,500,700,1000};
+   int nbins = 12+7+5+6;
+   double ptbins[31] = {10,15,20,25,30,35,40,50,60,70,80,90,100,110,120,130,140,150,160,180,200,220,240,260,280,300,350,400,500,700,1000};
    
    h1["pt_tag"  ]      = new TH1F("pt_tag"      , "" , 100, 0   , 1000);
    h1["pt_tag_var"]    = new TH1F("pt_tag_var"  , "" , nbins, ptbins);
@@ -206,16 +206,16 @@ int main(int argc, char * argv[])
       h1["pt_tag_var"]  -> Fill(selectedJets[1]->pt()  );
       h1["eta_tag" ]    -> Fill(selectedJets[1]->eta() );
       h1["phi_tag" ]    -> Fill(selectedJets[1]->phi() );
-      h1["btag_tag"]    -> Fill(selectedJets[1]->btag());
-      h1["btaglog_tag"] -> Fill(-log(1-selectedJets[1]->btag()));
+      h1["btag_tag"]    -> Fill(GetBTag(*selectedJets[1],btagalgo_));
+      h1["btaglog_tag"] -> Fill(-log(1-GetBTag(*selectedJets[1],btagalgo_)));
       
       // fill histograms for probe jet not matched yet 
       h1["pt_probe_den"  ]    -> Fill(selectedJets[0]->pt()  );
       h1["pt_probe_den_var"]  -> Fill(selectedJets[0]->pt()  );
       h1["eta_probe_den" ]    -> Fill(selectedJets[0]->eta() );
       h1["phi_probe_den" ]    -> Fill(selectedJets[0]->phi() );
-      h1["btag_probe_den"]    -> Fill(selectedJets[0]->btag());
-      h1["btaglog_probe_den"] -> Fill(-log(1-selectedJets[0]->btag()));
+      h1["btag_probe_den"]    -> Fill(GetBTag(*selectedJets[0],btagalgo_));
+      h1["btaglog_probe_den"] -> Fill(-log(1-GetBTag(*selectedJets[0],btagalgo_)));
       
       h1["delta_pt"] -> Fill((selectedJets[0]->pt()-selectedJets[1]->pt())/selectedJets[0]->pt());
       h1["delta_phi"] -> Fill(delta_phi);
@@ -257,8 +257,8 @@ int main(int argc, char * argv[])
       h1["pt_probe_num_var"]  -> Fill(selectedJets[0]->pt()  );
       h1["eta_probe_num" ]    -> Fill(selectedJets[0]->eta() );
       h1["phi_probe_num" ]    -> Fill(selectedJets[0]->phi() );
-      h1["btag_probe_num"]    -> Fill(selectedJets[0]->btag());
-      h1["btaglog_probe_num"] -> Fill(-log(1-selectedJets[0]->btag()));
+      h1["btag_probe_num"]    -> Fill(GetBTag(*selectedJets[0],btagalgo_));
+      h1["btaglog_probe_num"] -> Fill(-log(1-GetBTag(*selectedJets[0],btagalgo_)));
       h1["qglikelihood_probe_num"] -> Fill(selectedJets[0]->qgLikelihood());
       
 //            std::cout << "oioi - end" << std::endl;
