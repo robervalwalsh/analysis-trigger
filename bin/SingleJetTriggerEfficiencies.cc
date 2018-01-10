@@ -22,6 +22,8 @@ std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collect
 bool MatchOnlineOffline(const Jet & jet, const std::vector<TriggerObject *> & tos);
 bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos);
 
+bool IsGoodPrimaryVertex(const Vertex & pv);
+
 bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & type = "nom");
 
 // =============================================================================================   
@@ -35,6 +37,8 @@ int main(int argc, char * argv[])
    // Creat Analysis object
    Analysis analysis(inputlist_);
    
+   // Primary vertex
+   analysis.addTree<Vertex> ("PrimaryVertices",Form("%s/offlineSlimmedPrimaryVertices",treePath_.c_str()));
    // Jets
    analysis.addTree<Jet> ("Jets",Form("%s/%s",treePath_.c_str(),jetsCol_.c_str()));
    // L1T Jets
@@ -100,6 +104,9 @@ int main(int argc, char * argv[])
 // Offline selection
 // =================
       // Object - std::shared_ptr< Collection<Object> >
+      auto pvs = analysis.collection<Vertex>("PrimaryVertices");
+      if ( pvs->size() < 1 ) continue;
+      if ( ! IsGoodPrimaryVertex(pvs->at(0)) ) continue;
       
       // Jets
       auto slimmedJets = analysis.collection<Jet>("Jets");      
@@ -350,3 +357,12 @@ bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos)
 }
 
 
+bool IsGoodPrimaryVertex(const Vertex & pv)
+{
+   bool good = false;
+   
+   if ( ! pv.fake() && pv.ndof() > 4 && fabs(pv.z()) <= 24 && pv.rho() <=2 ) good = true;
+   else good = false;
+   
+   return good;
+}
