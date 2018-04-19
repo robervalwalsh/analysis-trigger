@@ -69,14 +69,24 @@ int main(int argc, char * argv[])
    // histograms
    std::map<std::string, TH1F*> h1;
    
+   // HLT_Mu8
+//   int nbins = 18;
+//   double ptbins[19] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,30,50,100};
+
+   // HLT_Mu12
+   float nbins = 20;
+   float ptbins[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,25,35,60,120};
+      
    // numerator histograms
    h1["n_num"]   = new TH1F("n_num"   , "" ,   5,  0   ,   5  );
    h1["pt_num"]  = new TH1F("pt_num"  , "" , 500,  0   ,  1000  );
+   h1["pt_var_num"]  = new TH1F("pt_var_num"  , "" , nbins, ptbins );
    h1["eta_num"] = new TH1F("eta_num" , "" , 100, -2.5 ,   2.5);
    h1["phi_num"] = new TH1F("phi_num" , "" , 128, -3.2 ,   3.2);
    
    h1["n_den"]   = new TH1F("n_den"   , "" ,   5,  0   ,   5  );
    h1["pt_den"]  = new TH1F("pt_den"  , "" , 500,  0   ,  1000  );
+   h1["pt_var_den"]  = new TH1F("pt_var_den"  , "" , nbins, ptbins );
    h1["eta_den"] = new TH1F("eta_den" , "" , 100, -2.5 ,   2.5);
    h1["phi_den"] = new TH1F("phi_den" , "" , 128, -3.2 ,   3.2);
    
@@ -233,7 +243,7 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
       for ( int j = 0 ; j < l1tjets->size() ; ++j )
       {
          L1TJet * l1tjet = &(l1tjets->at(j));
-         if ( l1tjet->pt() > l1tptmin[0] && fabs(l1tjet->eta()) < l1tetamax[0] )
+         if ( l1tjet->pt() >= l1tptmin[0] && fabs(l1tjet->eta()) <= l1tetamax[0] )
             selectedL1TJets.push_back(l1tjet);
       }
       if ( (int)selectedL1TJets.size() < l1tnmin ) return false;
@@ -249,18 +259,23 @@ bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & typ
       // select L1 objects
       auto l1jets = analysis.collection<TriggerObject>(tos[0]);
       selectedL1Jets = SelectTriggerObjects(l1jets,0,tonmin,toptmin,toetamax);
-      if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
+//      if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
       
       // select L2 objects
       auto l2jets = analysis.collection<TriggerObject>(tos[1]);
       selectedL2Jets = SelectTriggerObjects(l2jets,1,tonmin,toptmin,toetamax);
-      if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
+//      if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
    
       // select L3 objects
       auto l3jets = analysis.collection<TriggerObject>(tos[2]);
       selectedL3Jets = SelectTriggerObjects(l3jets,2,tonmin,toptmin,toetamax);
-      if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
+//      if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
    }
+   
+   if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
+   if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
+   if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
+
 
    // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
    if ( matchonoff_ )

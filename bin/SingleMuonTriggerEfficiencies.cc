@@ -60,6 +60,7 @@ int main(int argc, char * argv[])
       analysis.addTree<TriggerObject> (obj,Form("%s/%s/%s",treePath_.c_str(),triggerObjDir_.c_str(),obj.c_str()));
    }
    
+   
    // JSON for data   
    if( !isMC_ ) analysis.processJsonFile(json_);
    
@@ -70,23 +71,23 @@ int main(int argc, char * argv[])
    std::map<std::string, TH1F*> h1;
    
    // HLT_Mu8
-   int nbins = 18;
-   double ptbins[19] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,30,50,100};
+//   int nbins = 18;
+//   double ptbins[19] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,30,50,100};
 
    // HLT_Mu12
-//   int nbins = 18;
-//   double ptbins[19] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,20,30,50,70,100};
+   float nbins = 20;
+   float ptbins[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,25,35,60,120};
       
    // numerator histograms
-   h1["n_num"]   = new TH1F("n_num"   , "" ,   5,  0   ,   5  );
-//   h1["pt_num"]  = new TH1F("pt_num"  , "" , 120,  0   ,  240 );
-   h1["pt_num"]  = new TH1F("pt_num"  , "" , nbins, ptbins );
+   h1["n_num"]       = new TH1F("n_num"   , "" ,   5,  0   ,   5  );
+   h1["pt_num"]      = new TH1F("pt_num"  , "" , 150,  0   ,  150 );
+   h1["pt_var_num"]  = new TH1F("pt_var_num"  , "" , nbins, ptbins );
    h1["eta_num"] = new TH1F("eta_num" , "" , 100, -2.5 ,   2.5);
    h1["phi_num"] = new TH1F("phi_num" , "" , 128, -3.2 ,   3.2);
    
-   h1["n_den"]   = new TH1F("n_den"   , "" ,   5,  0   ,   5  );
-//   h1["pt_den"]  = new TH1F("pt_den"  , "" , 120,  0   ,  240 );
-   h1["pt_den"]  = new TH1F("pt_den"  , "" , nbins, ptbins );
+   h1["n_den"]       = new TH1F("n_den"   , "" ,   5,  0   ,   5  );
+   h1["pt_den"]      = new TH1F("pt_den"  , "" , 150,  0   ,  150 );
+   h1["pt_var_den"]  = new TH1F("pt_var_den"  , "" , nbins, ptbins );
    h1["eta_den"] = new TH1F("eta_den" , "" , 100, -2.5 ,   2.5);
    h1["phi_den"] = new TH1F("phi_den" , "" , 128, -3.2 ,   3.2);
    
@@ -100,17 +101,12 @@ int main(int argc, char * argv[])
       if ( i > 0 && i%10000==0 ) std::cout << i << "  events processed! " << std::endl;
       
       analysis.event(i);
-      
       if (! isMC_ )
       {
-         int json_status = analysis.processJsonFile(json_);
-         if ( json_status < 0 ) 
-         {
-            std::cout << "Error from processing json. Please check your json file." << std::endl;
-            return -1;
-         }
+         if (!analysis.selectJson() ) continue; // To use only goodJSonFiles
       }
-
+      
+      
 // Offline selection
 // =================
       // Object - std::shared_ptr< Collection<Object> >
@@ -121,7 +117,6 @@ int main(int argc, char * argv[])
       // Muons
       auto slimmedMuons = analysis.collection<Muon>("Muons");      
       // selection of muons
-      
       std::vector<Muon *> selectedIdMuons;
       for ( int m = 0 ; m < slimmedMuons->size() ; ++m )
       {
@@ -143,10 +138,6 @@ int main(int argc, char * argv[])
       if ( (int)selectedMuons.size() < nmuonsmin_ ) continue;
       
       Muon * muon = selectedMuons.at(0);
-//      std::cout << i<< std::endl;
-//      for ( auto & mu: selectedMuons )
-//         std::cout << " offline: " << mu->pt() << "  " << mu-> eta() << "   " << mu->phi() << "  " << mu->isMediumMuon() << "  "  << std::endl;
-//      std::cout << "----------" << std::endl;
       
       
 // Trigger analysis, reference trigger (denominator)
@@ -158,7 +149,8 @@ int main(int argc, char * argv[])
 //      if ( psweight_ ) pswref = analysis.triggerPrescale(hltPathRef_)*analysis.triggerPrescale(l1SeedRef_);
       
       // fill histograms
-      h1["pt_den" ]     -> Fill(muon->pt() ,pswref);
+      h1["pt_den"]      -> Fill(muon->pt() ,pswref);
+      h1["pt_var_den"]  -> Fill(muon->pt() ,pswref);
       h1["eta_den"]     -> Fill(muon->eta(),pswref);
       h1["phi_den"]     -> Fill(muon->phi(),pswref);
       
@@ -173,7 +165,8 @@ int main(int argc, char * argv[])
       if ( psweight_ ) psw = analysis.triggerPrescale(hltPath_);
       
       // fill histograms
-      h1["pt_num" ]     -> Fill(muon->pt() , psw);
+      h1["pt_num"]      -> Fill(muon->pt() , psw);
+      h1["pt_var_num"]  -> Fill(muon->pt() , psw);
       h1["eta_num"]     -> Fill(muon->eta(), psw);
       h1["phi_num"]     -> Fill(muon->phi(), psw);
       
@@ -281,24 +274,10 @@ bool TriggerAccept(Analysis & analysis, const Muon & muon, const std::string & t
 //      if ( (int)selectedL3Muons.size() < tonmin[2]  ) return false;
    }
    
-//    if ( type != "ref" )
-//    {
-//       for ( auto & ol1 : selectedL1Muons )
-//          std::cout << " L1 "  << ol1->pt() << "  " << ol1->eta() << "  " << ol1->phi() << std::endl;
-//       for ( auto & ol2 : selectedL2Muons )
-//          std::cout << " L2 "  << ol2->pt() << "  " << ol2->eta() << "  " << ol2->phi() << std::endl;
-//       for ( auto & ol3 : selectedL3Muons )
-//          std::cout << " L3 "  << ol3->pt() << "  " << ol3->eta() << "  " << ol3->phi() << std::endl;
-//       
-//    }
       if ( (int)selectedL1Muons.size() < tonmin[0]  ) return false;
       if ( (int)selectedL2Muons.size() < tonmin[1]  ) return false;
       if ( (int)selectedL3Muons.size() < tonmin[2]  ) return false;
       
-//       if ( type == "nom" ) std::cout << "trigger fired" << std::endl;
-
-   
-
 
    // match leading muon to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
    if ( matchonoff_ )
