@@ -73,8 +73,26 @@
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
 </bin>
 
-
 <bin   name="SingleJetTriggerEfficiencies" file="SingleJetTriggerEfficiencies.cc">
 <flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
 </bin>
 
+<bin   name="SingleMuonTriggerEfficiencies" file="SingleMuonTriggerEfficiencies.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="JetMuonTriggerEfficiencies" file="JetMuonTriggerEfficiencies.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="JetMuonTriggerEfficienciesL1T" file="JetMuonTriggerEfficienciesL1T.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="JetTriggerAnalysis" file="JetTriggerAnalysis.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>
+
+<bin   name="TriggerRates" file="TriggerRates.cc">
+<flags   LDFLAGS="-lCore -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lz -pthread -lm -ldl -rdynamic"/>
+</bin>

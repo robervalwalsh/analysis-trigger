@@ -19,12 +19,17 @@ using namespace analysis::tools;
 
 std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collection<TriggerObject> > & tos, const int & idx);
 std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collection<TriggerObject> > & tos, const int & idx, const int * const nmin, const std::vector<float> * const ptmin, const std::vector<float> * const etamax );
+bool MatchOnlineOffline(const Muon & muon, const std::vector<TriggerObject *> & tos);
+bool MatchOnlineOffline(const Muon & muon, const std::vector<L1TMuon *> & tos);
+bool MatchOnlineOffline(const Muon & muon, const std::shared_ptr< Collection<TriggerObject> > & tos);
+
 bool MatchOnlineOffline(const Jet & jet, const std::vector<TriggerObject *> & tos);
 bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos);
+bool MatchOnlineOffline(const Jet & jet, const std::shared_ptr< Collection<TriggerObject> > & tos);
 
 bool IsGoodPrimaryVertex(const Vertex & pv);
 
-bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & type = "nom");
+bool TriggerAccept(Analysis & analysis, const Jet & jet, const Muon & muon, const std::string & type = "nom");
 
 // =============================================================================================   
 int main(int argc, char * argv[])
@@ -43,6 +48,10 @@ int main(int argc, char * argv[])
    analysis.addTree<Jet> ("Jets",Form("%s/%s",treePath_.c_str(),jetsCol_.c_str()));
    // L1T Jets
    analysis.addTree<L1TJet> ("L1TJets",Form("%s/%s",treePath_.c_str(),l1tjetsCol_.c_str()));
+   // Muons
+   analysis.addTree<Muon> ("Muons",Form("%s/%s",treePath_.c_str(),muonsCol_.c_str()));
+   // L1T Muons
+   analysis.addTree<L1TMuon> ("L1TMuons",Form("%s/%s",treePath_.c_str(),l1tmuonsCol_.c_str()));
    // Trigger path info
    analysis.triggerResults(Form("%s/%s",treePath_.c_str(),triggerCol_.c_str()));
    // Trigger objects
@@ -60,6 +69,7 @@ int main(int argc, char * argv[])
       analysis.addTree<TriggerObject> (obj,Form("%s/%s/%s",treePath_.c_str(),triggerObjDir_.c_str(),obj.c_str()));
    }
    
+   
    // JSON for data   
    if( !isMC_ ) analysis.processJsonFile(json_);
    
@@ -69,26 +79,8 @@ int main(int argc, char * argv[])
    // histograms
    std::map<std::string, TH1F*> h1;
    
-   // HLT_Mu8
-//   int nbins = 18;
-//   double ptbins[19] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,30,50,100};
-
-   // HLT_Mu12
-   float nbins = 20;
-   float ptbins[21] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,25,35,60,120};
-      
-   // numerator histograms
-   h1["n_num"]   = new TH1F("n_num"   , "" ,   5,  0   ,   5  );
-   h1["pt_num"]  = new TH1F("pt_num"  , "" , 500,  0   ,  1000  );
-   h1["pt_var_num"]  = new TH1F("pt_var_num"  , "" , nbins, ptbins );
-   h1["eta_num"] = new TH1F("eta_num" , "" , 100, -2.5 ,   2.5);
-   h1["phi_num"] = new TH1F("phi_num" , "" , 128, -3.2 ,   3.2);
-   
-   h1["n_den"]   = new TH1F("n_den"   , "" ,   5,  0   ,   5  );
-   h1["pt_den"]  = new TH1F("pt_den"  , "" , 500,  0   ,  1000  );
-   h1["pt_var_den"]  = new TH1F("pt_var_den"  , "" , nbins, ptbins );
-   h1["eta_den"] = new TH1F("eta_den" , "" , 100, -2.5 ,   2.5);
-   h1["phi_den"] = new TH1F("phi_den" , "" , 128, -3.2 ,   3.2);
+   h1["dR_num"]      = new TH1F("dR_num"  , "" , 50,  0   ,  1. );
+   h1["dR_den"]      = new TH1F("dR_den"  , "" , 50,  0   ,  1. );
    
    
    // Analysis of events
@@ -100,23 +92,43 @@ int main(int argc, char * argv[])
       if ( i > 0 && i%10000==0 ) std::cout << i << "  events processed! " << std::endl;
       
       analysis.event(i);
-      
       if (! isMC_ )
       {
-         int json_status = analysis.processJsonFile(json_);
-         if ( json_status < 0 ) 
-         {
-            std::cout << "Error from processing json. Please check your json file." << std::endl;
-            return -1;
-         }
+         if (!analysis.selectJson() ) continue; // To use only goodJSonFiles
       }
-
+      
+      
 // Offline selection
 // =================
       // Object - std::shared_ptr< Collection<Object> >
       auto pvs = analysis.collection<Vertex>("PrimaryVertices");
       if ( pvs->size() < 1 ) continue;
       if ( ! IsGoodPrimaryVertex(pvs->at(0)) ) continue;
+      
+      // Muons
+      auto slimmedMuons = analysis.collection<Muon>("Muons");      
+      // selection of muons
+      std::vector<Muon *> selectedIdMuons;
+      for ( int m = 0 ; m < slimmedMuons->size() ; ++m )
+      {
+         Muon * muon = &(slimmedMuons->at(m));
+         if ( muon -> isMediumMuon() )
+            selectedIdMuons.push_back(muon);
+      }
+      if ( (int)selectedIdMuons.size() < nmuonsmin_ ) continue;
+      std::vector<Muon *> selectedMuons;
+      // selection only on the leading  id'ed muon
+      for ( int m = 0 ; m < (int)selectedIdMuons.size() ; ++m )
+      {
+         Muon * muon = selectedIdMuons.at(m);
+         if ( muon->pt() > muonsptmin_[0] && muon->pt() <= muonsptmax_[0] && fabs(muon->eta()) < muonsetamax_[0] )
+         {
+            selectedMuons.push_back(muon);
+         }
+      }
+      if ( (int)selectedMuons.size() < nmuonsmin_ ) continue;
+      
+      Muon * muon = selectedMuons.at(0);
       
       // Jets
       auto slimmedJets = analysis.collection<Jet>("Jets");      
@@ -140,35 +152,28 @@ int main(int argc, char * argv[])
       if ( (int)selectedJets.size() < njetsmin_ ) continue;
       
       Jet * jet = selectedJets.at(0);
+      float deltar = -1;
+      for ( auto & m : selectedMuons )
+      {
+          deltar = m->deltaR(*jet);
+          if ( deltar < drmax_ )
+          {
+             muon = m;
+             break;
+          }
+      }
+      if ( deltar < 0 ) continue;
       
       
 // Trigger analysis, reference trigger (denominator)
 // =================================================  
-      bool refAccept = TriggerAccept(analysis,*jet,"ref");
+      bool refAccept = TriggerAccept(analysis,*jet, *muon,"ref");
       if ( ! refAccept ) continue;
+      h1["dR_den"] -> Fill(deltar);
       
-      float pswref = 1;
-//      if ( psweight_ ) pswref = analysis.triggerPrescale(hltPathRef_)*analysis.triggerPrescale(l1SeedRef_);
-      
-      // fill histograms
-      h1["pt_den" ]     -> Fill(jet->pt() ,pswref);
-      h1["eta_den"]     -> Fill(jet->eta(),pswref);
-      h1["phi_den"]     -> Fill(jet->phi(),pswref);
-      
-// // Trigger analysis, nominal trigger (numerator)
-// // =================================================    
-      bool nomAccept = TriggerAccept(analysis,*jet,"nom");
-      
+      bool nomAccept = TriggerAccept(analysis,*jet, *muon,"nom");
       if ( ! nomAccept ) continue;
-      
-      float psw = 1;
-//      if ( psweight_ ) psw = analysis.triggerPrescale(hltPath_)*analysis.triggerPrescale(l1Seed_);
-      if ( psweight_ ) psw = analysis.triggerPrescale(hltPath_);
-      
-      // fill histograms
-      h1["pt_num" ]     -> Fill(jet->pt() , psw);
-      h1["eta_num"]     -> Fill(jet->eta(), psw);
-      h1["phi_num"]     -> Fill(jet->phi(), psw);
+      h1["dR_num"] -> Fill(deltar);
       
       
    } // end of event loop
@@ -180,120 +185,77 @@ int main(int argc, char * argv[])
    
    hout.Close();
    
-   std::cout << "SingleJetTriggerEfficiencies: program finished" << std::endl;
+   std::cout << "JetMuonTriggerEfficiencies: program finished" << std::endl;
    
 } //end main
 
 
 // ================================
 
-bool TriggerAccept(Analysis & analysis, const Jet & jet, const std::string & type)
+bool TriggerAccept(Analysis & analysis, const Jet & jet, const Muon & muon, const std::string & type)
 {
    
    std::string hlt = hltPath_;
    std::string l1  = l1Seed_;
-   int l1tnmin = l1tjetsnmin_;
-   std::vector<float> l1tptmin = l1tjetsptmin_;
-   std::vector<float> l1tetamax = l1tjetsetamax_;
-   
-   std::vector<std::string> tos = triggerObjects_;
-   
-   int  * tonmin = tonmin_;
-   std::vector<float> * toptmin = toptmin_;
-   std::vector<float> * toetamax = toetamax_;
-   
-   
-   if ( trigemul_ && type == "nom" )
-   {
-      // emulating on top of the reference trigger, kind o f redundant but will keep it
-      hlt = hltPathRef_;
-      l1 = l1SeedRef_;
-      tos = triggerObjectsRef_;
-   }
-   if ( type == "ref" )
-   {
-      hlt = hltPathRef_;
-      l1 = l1SeedRef_;
-      l1tnmin = l1tjetsrefnmin_;
-      l1tptmin = l1tjetsrefptmin_;
-      l1tetamax = l1tjetsrefetamax_;
-      tonmin = torefnmin_;
-      toptmin = torefptmin_;
-      toetamax = torefetamax_;
-      tos = triggerObjectsRef_;
-   }
    
 // Trigger analysis, reference trigger (denominator)
 // =================================================      
-   bool hltAccept = analysis.triggerResult(hlt);
-   // see SingleJetTriggerAnalysis.cc for the usage of prescales if that is needed
+   bool hltAccept = analysis.triggerResult(hltPath_);
+   // see SingleMuonTriggerAnalysis.cc for the usage of prescales if that is needed
    
-   bool l1Accept  = true;
-   if ( l1 != "" )  analysis.triggerResult(l1);
+   bool l1Accept = true;
+   if ( l1Seed_ != "" )  l1Accept = analysis.triggerResult(l1Seed_);
    
    if ( !hltAccept || !l1Accept ) return false; // Selecting one of the OR L1 seeds.
    
-   // Emulation with L1T candidate
-   // L1TJets
-   // selection of jets
-   std::vector<L1TJet *> selectedL1TJets;
-   if ( l1tnmin > 0 )
-   {
-      auto l1tjets = analysis.collection<L1TJet>("L1TJets");
-      for ( int j = 0 ; j < l1tjets->size() ; ++j )
-      {
-         L1TJet * l1tjet = &(l1tjets->at(j));
-         if ( l1tjet->pt() >= l1tptmin[0] && fabs(l1tjet->eta()) <= l1tetamax[0] )
-            selectedL1TJets.push_back(l1tjet);
-      }
-      if ( (int)selectedL1TJets.size() < l1tnmin ) return false;
-   }
+   auto l1muons = analysis.collection<TriggerObject>(triggerObjectsMuons_[0]);
+   auto l3muons = analysis.collection<TriggerObject>(triggerObjectsMuons_[1]);
    
-   // Emulation with trigger objects
-   std::vector<TriggerObject *> selectedL1Jets;
-   std::vector<TriggerObject *> selectedL2Jets;
-   std::vector<TriggerObject *> selectedL3Jets;
+   auto l1jets = analysis.collection<TriggerObject>(triggerObjectsJets_[0]);
+   auto l3jets = analysis.collection<TriggerObject>(triggerObjectsJets_[1]);
    
-   if ( tos.size() > 2 )
-   {
-      // select L1 objects
-      auto l1jets = analysis.collection<TriggerObject>(tos[0]);
-      selectedL1Jets = SelectTriggerObjects(l1jets,0,tonmin,toptmin,toetamax);
-//      if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
-      
-      // select L2 objects
-      auto l2jets = analysis.collection<TriggerObject>(tos[1]);
-      selectedL2Jets = SelectTriggerObjects(l2jets,1,tonmin,toptmin,toetamax);
-//      if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
-   
-      // select L3 objects
-      auto l3jets = analysis.collection<TriggerObject>(tos[2]);
-      selectedL3Jets = SelectTriggerObjects(l3jets,2,tonmin,toptmin,toetamax);
-//      if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
-   }
-   
-   if ( (int)selectedL1Jets.size() < tonmin[0]  ) return false;
-   if ( (int)selectedL2Jets.size() < tonmin[1]  ) return false;
-   if ( (int)selectedL3Jets.size() < tonmin[2]  ) return false;
-
-
-   // match leading jet to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
+   // match leading muon to trigger objects - will be done by hand to be sure to use the correct emulated trigger objects
    if ( matchonoff_ )
    {
-      bool l1match = false;
-      if ( tonmin[0] > 0 )       l1match = MatchOnlineOffline(jet,selectedL1Jets);
-      else if (l1tnmin > 0)      l1match = MatchOnlineOffline(jet,selectedL1TJets);
-      else l1match = true;
-      if ( !l1match ) return false;
+      // matching muons
+      if (  !(MatchOnlineOffline(muon,l1muons) && MatchOnlineOffline(muon,l3muons)) ) return false;
+      // matching jets
+      if (  !(MatchOnlineOffline(muon,l1jets) && MatchOnlineOffline(muon,l3jets)) ) return false;
       
-      bool l2match = MatchOnlineOffline(jet,selectedL2Jets);
-      if ( !l2match ) return false;
-      
-      bool l3match = MatchOnlineOffline(jet,selectedL3Jets);
-      if ( !l3match ) return false;
    }
    
-   return true;
+   if ( type == "ref" ) return true;
+   
+   // emulate delta R between jet-muon at trigger level - at least ONE muon-jet
+   // L1
+   bool accept = false;
+   for ( int m = 0 ; m < l1muons->size() ; ++m )
+   {
+      TriggerObject mu = l1muons->at(m);
+      for ( int j = 0 ; j < l1jets->size() ; ++j )
+      {
+         TriggerObject je = l1jets->at(j);
+         if ( mu.deltaR(je) <= 0.4 ) accept = true ;
+      }
+   }
+   
+   if ( ! accept ) return false;
+   
+   // L3
+   accept = false;
+   for ( int m = 0 ; m < l3muons->size() ; ++m )
+   {
+      TriggerObject mu = l3muons->at(m);
+      for ( int j = 0 ; j < l3jets->size() ; ++j )
+      {
+         TriggerObject je = l3jets->at(j);
+         if ( mu.deltaR(je) <= 0.5 ) accept = true ; // 0.5 is the threshold of the BTagMu module
+      }
+   }
+   
+   if ( ! accept ) return false;
+   
+   return true; 
 
 }
 
@@ -343,28 +305,56 @@ std::vector<TriggerObject *> SelectTriggerObjects(const std::shared_ptr< Collect
 
 }
 
-bool MatchOnlineOffline(const Jet & jet, const std::vector<TriggerObject *> & tos)
+bool MatchOnlineOffline(const Muon & muon, const std::vector<TriggerObject *> & tos)
 {
    bool match = false;
    if ( tos.size() < 1 ) return true; // ?????
    
    for ( size_t i = 0; i < tos.size() ; ++i )
    {
-      if ( jet.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
+      if ( muon.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
       if ( match ) break;
    }
    return match;
    
 }
 
-bool MatchOnlineOffline(const Jet & jet, const std::vector<L1TJet *> & tos)
+bool MatchOnlineOffline(const Muon & cand, const std::shared_ptr< Collection<TriggerObject> > & tos)
+{
+   bool match = false;
+   if ( tos->size() < 1 ) return true; // ?????
+   
+   for ( int i = 0; i < tos->size() ; ++i )
+   {
+      if ( cand.deltaR(tos->at(i)) < matchonoffdrmax_ ) match = true;
+      if ( match ) break;
+   }
+   return match;
+   
+}
+
+bool MatchOnlineOffline(const Jet & cand, const std::shared_ptr< Collection<TriggerObject> > & tos)
+{
+   bool match = false;
+   if ( tos->size() < 1 ) return true; // ?????
+   
+   for ( int i = 0; i < tos->size() ; ++i )
+   {
+      if ( cand.deltaR(tos->at(i)) < matchonoffdrmax_ ) match = true;
+      if ( match ) break;
+   }
+   return match;
+   
+}
+
+bool MatchOnlineOffline(const Muon & muon, const std::vector<L1TMuon *> & tos)
 {
    bool match = false;
    if ( tos.size() < 1 ) return true; // ?????
    
    for ( size_t i = 0; i < tos.size() ; ++i )
    {
-      if ( jet.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
+      if ( muon.deltaR(*tos[i]) < matchonoffdrmax_ ) match = true;
       if ( match ) break;
    }
    return match;
