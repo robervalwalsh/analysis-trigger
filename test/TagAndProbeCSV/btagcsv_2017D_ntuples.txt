@@ -1,1 +1,0 @@
-../ntupleslists/btagcsv_2017D_ntuples.txt
