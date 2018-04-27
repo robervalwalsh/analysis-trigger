@@ -1,0 +1,54 @@
+./tag_and_probe.csh 2017C-v1 50 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017C-v2 50 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017C-v3 50 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017D    50 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017E-v1 20 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017E-v2 20 deepcsv 0.8001 0.4941
+./tag_and_probe.csh 2017F    20 deepcsv 0.8001 0.4941
+
+
+./tag_and_probe.csh 2017C-v1 50 csv 0.9693 0.8838
+./tag_and_probe.csh 2017C-v2 50 csv 0.9693 0.8838
+./tag_and_probe.csh 2017C-v3 50 csv 0.9693 0.8838
+./tag_and_probe.csh 2017D    50 csv 0.9693 0.8838
+./tag_and_probe.csh 2017E-v1 20 csv 0.9693 0.8838
+./tag_and_probe.csh 2017E-v2 20 csv 0.9693 0.8838
+./tag_and_probe.csh 2017F    20 csv 0.9693 0.8838
+
+
+
+./tag_and_probe.csh 2017C-v1 50 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017C-v2 50 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017C-v3 50 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017D    50 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017E-v1 20 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017E-v2 20 deepcsv 0.8001 0.4941   PromptReco_2017
+./tag_and_probe.csh 2017F    20 deepcsv 0.8001 0.4941   PromptReco_2017
+
+
+./tag_and_probe.csh 2017C-v1 50 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017C-v2 50 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017C-v3 50 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017D    50 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017E-v1 20 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017E-v2 20 csv 0.9693 0.8838    PromptReco_2017
+./tag_and_probe.csh 2017F    20 csv 0.9693 0.8838    PromptReco_2017
+
+# 2016 btag WPs
+
+./tag_and_probe.csh 2017C-v1 50 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017C-v2 50 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017C-v3 50 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017D    50 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017E-v1 20 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017E-v2 20 deepcsv 0.8958 0.6324   PromptReco_2017
+./tag_and_probe.csh 2017F    20 deepcsv 0.8958 0.6324   PromptReco_2017
+
+
+./tag_and_probe.csh 2017C-v1 50 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017C-v2 50 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017C-v3 50 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017D    50 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017E-v1 20 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017E-v2 20 csv 0.9535 0.8484    PromptReco_2017
+./tag_and_probe.csh 2017F    20 csv 0.9535 0.8484    PromptReco_2017
