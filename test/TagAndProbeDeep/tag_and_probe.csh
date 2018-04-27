@@ -1,14 +1,44 @@
 #!/bin/csh -f
 
-if ( $#argv < 2 ) then
-   echo Need to give era and number of splits
+if ( $#argv < 5 ) then
+   echo "Need to give era and number of splits, btag algo, tag and probe btag WPs, optionally the reco type"
    exit
 endif
 
 set era = $1
 set splits = $2
-set json = "Cert_"$era".json"
-set ntuples = "BTagCSV_"$era".txt"
+set btagalgo = $3
+set wptag = $4
+set wpprobe = $5
+
+set name = $btagalgo"_"$wptag"_"$wpprobe
+
+set reco = "ReReco17Nov2017_2017"
+if ( $#argv == 6 ) then
+   set reco = $6
+endif
+
+set mypwd = $PWD
+set mytestdir = $PWD/..
+set mydir = $PWD/$reco/$name
+if ( ! -d $mydir ) then
+   mkdir -p $mydir
+endif
+
+cd $mydir
+
+set json = "$mytestdir/certifiedlumis/$reco/Cert_"$era".json"
+set ntuples = "$mytestdir/ntupleslists/$reco/BTagCSV_"$era".txt"
+
+if ( ! -e $json ) then
+   echo $json does not exist
+   exit
+endif
+
+if ( ! -e $ntuples ) then
+   echo $ntuples does not exist
+   exit
+endif
 
 set ptmin =  (40  160 220 400)
 set ptmax =  (160 220 400 1000)
@@ -35,7 +65,11 @@ while ( $count < $#ptmin + 1 )
 
    echo $cfgfile
 
-   cp -pf tag_and_probe.cfg $cfgfile
+   cp -pf $mypwd/tag_and_probe.cfg $cfgfile
+   ln -s $json .
+   ln -s $ntuples .
+   set localjson = `basename $json`
+   set localntpl = `basename $ntuples`
    
    sed -i -e "s/ERA/$era/g" $cfgfile
    sed -i -e "s/PTMIN/$ptmin[$count]/g" $cfgfile
@@ -45,11 +79,14 @@ while ( $count < $#ptmin + 1 )
    sed -i -e "s/OCALO/$ocalo[$count]/g" $cfgfile
    sed -i -e "s/OBTAG/$obtag[$count]/g" $cfgfile
    sed -i -e "s/OPF/$opf[$count]/g" $cfgfile
-   sed -i -e "s/JSON/$json/g" $cfgfile
+   sed -i -e "s/JSON/$localjson/g" $cfgfile
+   sed -i -e "s/TAGWP/$wptag/g" $cfgfile
+   sed -i -e "s/PROBEWP/$wpprobe/g" $cfgfile
+   sed -i -e "s/ALGBTAG/$btagalgo/g" $cfgfile
       
-   naf_submit.csh $ntuples TagAndProbeOnlineBtag $cfgfile $splits $json
+   naf_submit.csh $localntpl TagAndProbeOnlineBtag $cfgfile $splits $localjson
    
-   rm -f $cfgfile
+   rm -f $mydir/$cfgfile $mydir/$localjson $mydir/$localntpl
 
    @ count ++
 end
