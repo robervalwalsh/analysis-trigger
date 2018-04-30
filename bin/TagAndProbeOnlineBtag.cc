@@ -74,6 +74,10 @@ int main(int argc, char * argv[])
       if ( i > 0 && i%100000==0 ) std::cout << i << "  events processed! " << std::endl;
       
       analysis.event(i);
+      
+      if ( runmin_ > 0 && analysis.run() < runmin_ ) continue;
+      if ( runmax_ > 0 && analysis.run() > runmax_ ) continue;
+      
       if (! isMC_ )
       {
          if (!analysis.selectJson() ) continue; // To use only goodJSonFiles
@@ -81,7 +85,7 @@ int main(int argc, char * argv[])
       
       int triggerFired = analysis.triggerResult(hltPath_);
       if ( !triggerFired ) continue;
-      
+            
       // match offline to online
       analysis.match<Jet,TriggerObject>("Jets",triggerObjects_,0.5);
       
@@ -178,7 +182,7 @@ int main(int argc, char * argv[])
    hout.Close();
    
 // PRINT OUTS   
-   std::cout << "SingleJetTriggerAnalysis: program finished" << std::endl;
+   std::cout << "TagAndProbeOnlineBtag: program finished" << std::endl;
    
 } //end main
 
