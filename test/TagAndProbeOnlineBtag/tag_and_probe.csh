@@ -40,8 +40,8 @@ if ( ! -e $ntuples ) then
    exit
 endif
 
-set ptmin =  (40  160 220 400)
-set ptmax =  (160 220 400 1000)
+set ptmin =  (40  120 200 380)
+set ptmax =  (120 200 380 1000)
 
 set hlt    = ( "HLT_DoublePFJets40_CaloBTagCSV_p33_v" "HLT_DoublePFJets100_CaloBTagCSV_p33_v" "HLT_DoublePFJets200_CaloBTagCSV_p33_v" "HLT_DoublePFJets350_CaloBTagCSV_p33_v" )
 set ol1    = ( "hltL1DoubleJet40er3p0" "hltL1DoubleJet100er3p0" "hltL1DoubleJet120er3p0" "hltL1DoubleJet120er3p0" )  
