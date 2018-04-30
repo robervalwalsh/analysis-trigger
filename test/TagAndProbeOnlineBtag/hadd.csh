@@ -45,5 +45,15 @@ if ( -e histograms_tep_2017E.root ) then
 endif
 hadd histograms_tep_2017E.root  histograms_tep_2017E-v1.root histograms_tep_2017E-v2.root  >>& log
 
+rm -f histograms_tep_2017CD.root histograms_tep_2017CDE-v1.root histograms_tep_2017CDE.root histograms_tep_2017E-v2F.root histograms_tep_2017CDEF.root >& /dev/null
+
+hadd histograms_tep_2017CD.root histograms_tep_2017C.root histograms_tep_2017D.root  >>& log
+hadd histograms_tep_2017CDE-v1.root histograms_tep_2017CD.root histograms_tep_2017E-v1.root  >>& log
+hadd histograms_tep_2017CDE.root histograms_tep_2017CD.root histograms_tep_2017E.root  >>& log
+hadd histograms_tep_2017E-v2F.root histograms_tep_2017E-v2.root histograms_tep_2017F.root  >>& log
+hadd histograms_tep_2017CDEF.root histograms_tep_2017CDE.root histograms_tep_2017F.root  >>& log
+
+sleep 1
+
 touch trash
 touch log
