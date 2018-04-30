@@ -1,17 +1,26 @@
-int EffPlots()
+int EffPlots(std::string mydir = ".")
 {
-   std::string era[5] = {"2017C","2017D","2017E-v1","2017E-v2","2017F"};
-   Color_t mycolor[5] = {kBlack,kRed,kBlue,kGreen,kMagenta};
+//   std::string era[5] = {"2017C","2017D","2017E-v1","2017E-v2","2017F"};
+//   Color_t mycolor[5] = {kBlack,kRed,kBlue,kGreen,kMagenta};
+//   std::string era[5] = {"2017C","2017D","2017E","2017F","2017F"};
+//   Color_t mycolor[5] = {kBlack,kRed,kBlue,kMagenta,kGreen};
+   std::string era[5] = {"2017CDE","2017F","2017E","2017F","2017F"};
+   Color_t mycolor[5] = {kBlack,kRed,kBlue,kMagenta,kGreen};
    TFile * f[5];
    
+   int neras = 2;
+   
    TCanvas * c1 = new TCanvas("c1","");
-   TLegend * legend = new TLegend(0.65,0.6,0.85,0.85,"Efficiency per era");
+   // top
+//   TLegend * legend = new TLegend(0.65,0.6,0.85,0.85,"Efficiency per era");
+   // bottom
+   TLegend * legend = new TLegend(0.65,0.2,0.85,0.45,"Efficiency per era");
    
    TMultiGraph *mg = new TMultiGraph();
    TGraphAsymmErrors * eff[5];
-   for ( int i = 0; i < 5 ; ++i )
+   for ( int i = 0; i < neras ; ++i )
    {
-      f[i] = new TFile(Form("eff_pt_%s.root",era[i].c_str()),"OLD");
+      f[i] = new TFile(Form("%s/eff_pt_%s.root",mydir.c_str(),era[i].c_str()),"OLD");
       eff[i] = (TGraphAsymmErrors*) f[i] -> Get("divide_pt_probe_num_var_by_pt_probe_den_var");
       eff[i] -> SetMarkerStyle(20);
       eff[i] -> SetMarkerSize(0.8);
@@ -33,7 +42,7 @@ int EffPlots()
    mg -> GetYaxis()->SetRangeUser(0,1);
    mg -> GetXaxis()->SetTitle("jet PT (GeV)");
    mg -> GetYaxis()->SetTitle("efficiency");
-   for ( int i = 0; i < 5 ; ++i )
+   for ( int i = 0; i < neras ; ++i )
    {
       legend-> AddEntry(eff[i]->GetName(),era[i].c_str(),"ep");
    }
@@ -44,7 +53,7 @@ int EffPlots()
 //    c1->SetSelected(c1);
 //    c1->ToggleToolBar();
    
-   c1 -> SaveAs("OnlineBtag_EffPt_eras.png");
+   c1 -> SaveAs(Form("%s/OnlineBtag_EffPt_eras.png",mydir.c_str()));
    
    
    return 0;
