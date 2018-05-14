@@ -1,0 +1,61 @@
+tag_and_probe_mc.csh QCD_Pt_50to80       50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_80to120      50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_120to170     50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_170to300     50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_300to470     50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_470to600     50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_600to800     50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_800to1000    50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_1000to1400   50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_1400to1800   50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_1800to2400   50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_2400to3200   50 deepcsv 0.8001 0.4941
+tag_and_probe_mc.csh QCD_Pt_3200toInf    50 deepcsv 0.8001 0.4941
+
+
+tag_and_probe_mc.csh QCD_Pt_50to80       50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_80to120      50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_120to170     50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_170to300     50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_300to470     50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_470to600     50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_600to800     50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_800to1000    50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_1000to1400   50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_1400to1800   50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_1800to2400   50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_2400to3200   50 deepcsv 0.8001 0.8001
+tag_and_probe_mc.csh QCD_Pt_3200toInf    50 deepcsv 0.8001 0.8001
+
+
+tag_and_probe_mc.csh QCD_Pt_50to80       50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_80to120      50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_120to170     50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_170to300     50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_300to470     50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_470to600     50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_600to800     50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_800to1000    50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_1000to1400   50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_1400to1800   50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_1800to2400   50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_2400to3200   50 csv 0.9693 0.8838
+tag_and_probe_mc.csh QCD_Pt_3200toInf    50 csv 0.9693 0.8838
+
+tag_and_probe_mc.csh QCD_Pt_50to80       50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_80to120      50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_120to170     50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_170to300     50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_300to470     50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_470to600     50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_600to800     50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_800to1000    50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_1000to1400   50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_1400to1800   50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_1800to2400   50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_2400to3200   50 csv 0.9693 0.9693
+tag_and_probe_mc.csh QCD_Pt_3200toInf    50 csv 0.9693 0.9693
+
+
+
+( "QCD_Pt_50to80" "QCD_Pt_80to120" "QCD_Pt_120to170" "QCD_Pt_170to300" "QCD_Pt_300to470" "QCD_Pt_470to600" "QCD_Pt_600to800" "QCD_Pt_800to1000" "QCD_Pt_1000to1400" )
