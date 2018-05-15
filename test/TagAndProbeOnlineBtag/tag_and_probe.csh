@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
-if ( $#argv < 5 ) then
-   echo "Need to give era and number of splits, btag algo, tag and probe btag WPs, optionally the reco type"
+if ( $#argv < 6 ) then
+   echo "Need to give era and number of splits, btag algo, tag and probe btag WPs, the reco type, optionally online btag type"
    exit
 endif
 
@@ -10,12 +10,17 @@ set splits = $2
 set btagalgo = $3
 set wptag = $4
 set wpprobe = $5
+set reco = $6
+set year = `echo $era | awk '{print substr($1,1,4)}'`
+
+set onlbtag = "deepcsv"
+if ( $#argv == 7 ) then
+   set onlbtag = $7
+endif
 
 set name = $btagalgo"_"$wptag"_"$wpprobe
-
-set reco = "ReReco17Nov2017_2017"
-if ( $#argv == 6 ) then
-   set reco = $6
+if ( $onlbtag == "csv" ) then
+   set name = $btagalgo"_"$wptag"_"$wpprobe"_onlineCSV"
 endif
 
 set mypwd = $PWD
@@ -28,7 +33,11 @@ endif
 cd $mydir
 
 set json = "$mytestdir/certifiedlumis/$reco/Cert_"$era".json"
-set ntuples = "$mytestdir/ntupleslists/$reco/BTagCSV_"$era".txt"
+set ntuples = "$mytestdir/ntupleslists/$reco/JetHT_"$era".txt"
+
+if ( $year == "2017" ) then
+   set ntuples = "$mytestdir/ntupleslists/$reco/BTagCSV_"$era".txt"
+endif
 
 if ( ! -e $json ) then
    echo $json does not exist
@@ -43,11 +52,25 @@ endif
 set ptmin =  (40  120 200 380)
 set ptmax =  (120 200 380 1000)
 
-set hlt    = ( "HLT_DoublePFJets40_CaloBTagCSV_p33_v" "HLT_DoublePFJets100_CaloBTagCSV_p33_v" "HLT_DoublePFJets200_CaloBTagCSV_p33_v" "HLT_DoublePFJets350_CaloBTagCSV_p33_v" )
-set ol1    = ( "hltL1DoubleJet40er3p0" "hltL1DoubleJet100er3p0" "hltL1DoubleJet120er3p0" "hltL1DoubleJet120er3p0" )  
-set ocalo  = ( "hltDoubleCaloBJets30eta2p3" "hltDoubleCaloBJets100eta2p3" "hltDoubleCaloBJets100eta2p3" "hltDoubleCaloBJets100eta2p3" )
-set obtag  = ( "hltBTagCalo30x8CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" )
-set opf    = ( "hltDoublePFJets40Eta2p3" "hltDoublePFJets100Eta2p3" "hltDoublePFJets200Eta2p3" "hltDoublePFJets350Eta2p3" )
+if ( $year == "2017" ) then
+   set hlt    = ( "HLT_DoublePFJets40_CaloBTagCSV_p33_v" "HLT_DoublePFJets100_CaloBTagCSV_p33_v" "HLT_DoublePFJets200_CaloBTagCSV_p33_v" "HLT_DoublePFJets350_CaloBTagCSV_p33_v" )
+   set ol1    = ( "hltL1DoubleJet40er3p0" "hltL1DoubleJet100er3p0" "hltL1DoubleJet120er3p0" "hltL1DoubleJet120er3p0" )  
+   set ocalo  = ( "hltDoubleCaloBJets30eta2p3" "hltDoubleCaloBJets100eta2p3" "hltDoubleCaloBJets100eta2p3" "hltDoubleCaloBJets100eta2p3" )
+   set obtag  = ( "hltBTagCalo30x8CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" "hltBTagCalo80x6CSVp0p92SingleWithMatching" )
+   set opf    = ( "hltDoublePFJets40Eta2p3" "hltDoublePFJets100Eta2p3" "hltDoublePFJets200Eta2p3" "hltDoublePFJets350Eta2p3" )
+endif
+
+# DeepCSV
+set hlt    = ( "HLT_DoublePFJets40_CaloBTagDeepCSV_p71_v"  "HLT_DoublePFJets100_CaloBTagDeepCSV_p71_v" "HLT_DoublePFJets200_CaloBTagDeepCSV_p71_v" "HLT_DoublePFJets350_CaloBTagDeepCSV_p71_v" )
+set ol1    = ( "hltL1DoubleJet40er3p0"                     "hltL1DoubleJet100er3p0"                    "hltL1DoubleJet120er3p0"                    "hltL1DoubleJet120er3p0"                    )  
+set ocalo  = ( "hltDoubleCaloBJets30eta2p3"                "hltDoubleCaloBJets100eta2p3"               "hltDoubleCaloBJets100eta2p3"               "hltDoubleCaloBJets100eta2p3"               )
+set opf    = ( "hltDoublePFJets40Eta2p3"                   "hltDoublePFJets100Eta2p3"                  "hltDoublePFJets200Eta2p3"                  "hltDoublePFJets350Eta2p3"                  )
+set obtag  = ( "hltBTagCaloDeepCSV0p71Single8Jets30"       "hltBTagCaloDeepCSV0p71Single6Jets80"       "hltBTagCaloDeepCSV0p71Single6Jets80"       "hltBTagCaloDeepCSV0p71Single6Jets80"       )
+# CSVv2
+if ( $onlbtag == "csv" ) then
+   set hlt    = ( "HLT_DoublePFJets40_CaloBTagCSV_p79_v"      "HLT_DoublePFJets100_CaloBTagCSV_p79_v"     "HLT_DoublePFJets200_CaloBTagCSV_p79_v"     "HLT_DoublePFJets350_CaloBTagCSV_p79_v"     )
+   set obtag  = ( "hltBTagCalo30x8CSVp79SingleWithMatching"   "hltBTagCalo80x6CSVp79SingleWithMatching"   "hltBTagCalo80x6CSVp79SingleWithMatching"   "hltBTagCalo80x6CSVp79SingleWithMatching"   )
+endif
 
 # change in L1 seed
 if ( $era == "2017C-v1" || $era == "2017C-v2" ) then
