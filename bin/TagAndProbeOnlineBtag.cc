@@ -316,6 +316,10 @@ float GetBTag(const Jet & jet, const std::string & algo)
    {
       btag = jet.btag("btag_deepb") + jet.btag("btag_deepbb");
    }
+   else if ( btagalgo_ == "deepbvsall" )
+   {
+      btag = jet.btag("btag_deepbvsall");
+   }
    else
    {
       btag = -9999;
