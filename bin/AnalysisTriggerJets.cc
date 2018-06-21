@@ -112,7 +112,8 @@ int main(int argc, char * argv[])
       
       // -- trigger fired
             
-      // match offline to online
+      // match offline to online - do not use in case of trigger emulation,
+      // need to use jet->matchTo(trigobj, name, deltaR), if matched retrieve using jet->matched(name)
       analysis.match<Jet,TriggerObject>("Jets",triggerObjects_,0.3);
 // -- online
       
