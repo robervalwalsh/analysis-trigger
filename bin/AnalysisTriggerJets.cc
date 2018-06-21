@@ -18,8 +18,10 @@ using namespace analysis;
 using namespace analysis::tools;
 
 std::vector<Jet *> SelectedIdJets(std::shared_ptr< Collection<Jet> >);
-void CreateHistograms(std::map<std::string, TH1F*> &, std::map<std::string, TH2F*> &);
-void WriteHistograms(std::map<std::string, TH1F*> &, std::map<std::string, TH2F*> &);
+void CreateHistograms(std::map<std::string, TH1F*> &);
+void CreateHistograms(std::map<std::string, TH2F*> &);
+template <typename T>
+void WriteHistograms(std::map<std::string, T*> &);
 bool JetJetCorrelations(const std::vector<Jet *> &);
 bool JetOffOnlMatch(const Jet &, const std::string & exception = "");
 float GetBTag(const Jet & jet, const std::string & algo);
@@ -31,7 +33,6 @@ int main(int argc, char * argv[])
 
    // read config parameters   
    if ( macro_config(argc, argv) != 0 ) return -1;
-   
    
    // Creat Analysis object
    Analysis analysis(inputlist_);
@@ -61,14 +62,18 @@ int main(int argc, char * argv[])
    // histograms
    std::map<std::string, TH1F*> h1;
    std::map<std::string, TH2F*> h2;
-   CreateHistograms(h1,h2);
+   CreateHistograms(h1);
+   CreateHistograms(h2);
    
    // Analysis of events
    std::cout << "This analysis has " << analysis.size() << " events" << std::endl;
    
    if ( nevtmax_ < 0 ) nevtmax_ = analysis.size();
+   
+   // MAIN LOOP
    for ( int i = 0 ; i < nevtmax_ ; ++i )
    {
+// resets
       bool goodEvent = true;
       
       std::map<std::string,bool> isGood;
@@ -83,24 +88,35 @@ int main(int argc, char * argv[])
             isGood[Form("deta%d%d",j,k)] = true;
          }
       }
-      
+// -- resets
       if ( i > 0 && i%100000==0 ) std::cout << i << "  events processed! " << std::endl;
       
+// read event
       analysis.event(i);
       
+      // select run ranges
       if ( runmin_ > 0 && analysis.run() < runmin_ ) continue;
       if ( runmax_ > 0 && analysis.run() > runmax_ ) continue;
       
+      // data-only
       if (! isMC_ )
       {
          if (!analysis.selectJson() ) continue; // To use only goodJSonFiles
       }
       
+// Online
+      // trigger fired
       int triggerFired = analysis.triggerResult(hltPath_);
       if ( !triggerFired ) continue;
+      // emulation of trigger should be called here
+      
+      // -- trigger fired
             
       // match offline to online
       analysis.match<Jet,TriggerObject>("Jets",triggerObjects_,0.3);
+// -- online
+      
+// Offline
       
       // Jets - std::shared_ptr< Collection<Jet> >
       auto slimmedJets = analysis.collection<Jet>("Jets");
@@ -197,7 +213,9 @@ int main(int argc, char * argv[])
    }
    
    // Write histograms to output
-   WriteHistograms(h1,h2);
+   WriteHistograms(h1);
+   WriteHistograms(h2);
+   
    hout.Close();
    
 // PRINT OUTS   
@@ -241,7 +259,7 @@ bool JetOffOnlMatch(const Jet & jet, const std::string & exception)
 
 }
 
-void CreateHistograms(std::map<std::string, TH1F*> & h1, std::map<std::string, TH2F*> & h2)
+void CreateHistograms(std::map<std::string, TH1F*> & h1)
 {
    for ( int j = 0; j < njetsmin_; ++j )
    {
@@ -256,17 +274,19 @@ void CreateHistograms(std::map<std::string, TH1F*> & h1, std::map<std::string, T
    }
    
 }
+void CreateHistograms(std::map<std::string, TH2F*> & h2)
+{
+   
+}
 
-void WriteHistograms(std::map<std::string, TH1F*> & h1, std::map<std::string, TH2F*> & h2)
+
+template <typename T>
+void WriteHistograms(std::map<std::string, T*> & h)
 {
    // Write histograms to output
-   for (auto & ih1 : h1)
+   for (auto & ih : h)
    {
-      ih1.second -> Write();
-   }
-   for (auto & ih2 : h2)
-   {
-      ih2.second -> Write();
+      ih.second -> Write();
    }
 
 }
