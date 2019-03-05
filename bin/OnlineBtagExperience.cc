@@ -29,6 +29,7 @@ int main(int argc, char ** argv)
    
    onlinebtag.jetHistograms(2,"tag");
    onlinebtag.jetHistograms(2,"probe");
+   onlinebtag.jetHistograms(2,"probe_match");
    
    // Analysis of events
    std::cout << "The sample size is " << onlinebtag.analysis()->size() << " events" << std::endl;
@@ -61,12 +62,15 @@ int main(int argc, char ** argv)
          
       // delta Phi
          if ( ! onlinebtag.selectionJetDphi(1,2)    )   continue;
+      // pT imbalance
+         if ( ! onlinebtag.selectionJetPtImbalance(1,2)    )   continue;
          
       // tag jet selection
          if ( ! onlinebtag.selectionJet(2)          )   continue;
          if ( ! onlinebtag.onlineJetMatching(2)     )   continue;
          if ( ! onlinebtag.selectionBJet(2)         )   continue;
          if ( ! onlinebtag.onlineBJetMatching(2)    )   continue;
+         onlinebtag.fillJetHistograms("tag");
          
       // probe jet selection
          if ( ! onlinebtag.selectionJet(1)          )   continue;
@@ -74,13 +78,13 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionBJet(1)         )   continue;
          
       // fill tag histograms after selection
-         onlinebtag.fillJetHistograms("tag");
+         onlinebtag.fillJetHistograms("probe");
          
       // PROBE jet match to online
          if ( ! onlinebtag.onlineBJetMatching(1)    )   continue;
          
       // fill probe histograms after selection
-         onlinebtag.fillJetHistograms("probe");
+         onlinebtag.fillJetHistograms("probe_match");
       }
    }
    
