@@ -51,37 +51,40 @@ int main(int argc, char ** argv)
       {
       
       // trigger selection
-         if ( ! onlinebtag.selectionHLT()           )   continue;
-         if ( ! onlinebtag.selectionL1 ()           )   continue;  // to be used in case of "OR" of seeds
+         if ( ! onlinebtag.selectionHLT()                 )   continue;
+         if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
       
             
       // jet identification selection
-         if ( ! onlinebtag.selectionJetId()         )   continue;
-         if ( ! onlinebtag.selectionJetPileupId()   )   continue;
-         if ( ! onlinebtag.selectionNJets()         )   continue;
+         if ( ! onlinebtag.selectionJetId()               )   continue;
+         if ( ! onlinebtag.selectionJetPileupId()         )   continue;
+         if ( ! onlinebtag.selectionNJets()               )   continue;
          
       // delta Phi
-         if ( ! onlinebtag.selectionJetDphi(1,2)    )   continue;
+         if ( ! onlinebtag.selectionJetDphi(1,2)          )   continue;
       // pT imbalance
-         if ( ! onlinebtag.selectionJetPtImbalance(1,2)    )   continue;
+         if ( ! onlinebtag.selectionJetPtImbalance(1,2)   )   continue;
          
       // tag jet selection
-         if ( ! onlinebtag.selectionJet(2)          )   continue;
-         if ( ! onlinebtag.onlineJetMatching(2)     )   continue;
-         if ( ! onlinebtag.selectionBJet(2)         )   continue;
-         if ( ! onlinebtag.onlineBJetMatching(2)    )   continue;
+         if ( ! onlinebtag.selectionJet(2)                )   continue;
+         if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
+         if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
+         if ( ! onlinebtag.selectionBJet(2)               )   continue;
+         if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
          onlinebtag.fillJetHistograms("tag");
          
       // probe jet selection
-         if ( ! onlinebtag.selectionJet(1)          )   continue;
-         if ( ! onlinebtag.onlineJetMatching(1)     )   continue;
-         if ( ! onlinebtag.selectionBJet(1)         )   continue;
+      // qg likelihood
+         if ( ! onlinebtag.selectionJet(1)                )   continue;
+         if ( ! onlinebtag.selectionJetQGlikelihood(1)    )   continue;
+         if ( ! onlinebtag.onlineJetMatching(1)           )   continue;
+         if ( ! onlinebtag.selectionBJet(1)               )   continue;
          
       // fill tag histograms after selection
          onlinebtag.fillJetHistograms("probe");
          
       // PROBE jet match to online
-         if ( ! onlinebtag.onlineBJetMatching(1)    )   continue;
+         if ( ! onlinebtag.onlineBJetMatching(1)          )   continue;
          
       // fill probe histograms after selection
          onlinebtag.fillJetHistograms("probe_match");
