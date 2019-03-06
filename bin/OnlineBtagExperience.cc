@@ -101,10 +101,10 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
       
       // muon identification selection
-         if ( ! mssmhbb.selectionMuonId()                 )   continue;
-         if ( ! mssmhbb.selectionNMuons()                 )   continue;
-         if ( ! mssmhbb.selectionMuons()                  )   continue;
-         if ( ! mssmhbb.onlineMuonMatching()              )   continue; // FIXME there: should change the selectedMuons ????
+         if ( ! onlinebtag.selectionMuonId()                 )   continue;
+         if ( ! onlinebtag.selectionNMuons()                 )   continue;
+         if ( ! onlinebtag.selectionMuons()                  )   continue;
+         if ( ! onlinebtag.onlineMuonMatching()              )   continue; // FIXME there: should change the selectedMuons ????
             
       // jet identification selection
          if ( ! onlinebtag.selectionJetId()               )   continue;
