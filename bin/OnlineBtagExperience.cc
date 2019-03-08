@@ -70,6 +70,7 @@ int main(int argc, char ** argv)
       // tag jet selection
          if ( ! onlinebtag.selectionJet(2)                )   continue;
          if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
+         if ( ! onlinebtag.selectionBJetProbBB(2)         )   continue;
          if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
          if ( ! onlinebtag.selectionBJet(2)               )   continue;
          if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
