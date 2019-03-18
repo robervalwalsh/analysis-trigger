@@ -33,6 +33,8 @@ int main(int argc, char ** argv)
    onlinebtag.jetHistograms(2,"probe");
    onlinebtag.jetHistograms(2,"probe_match");
    
+   onlinebtag.tagAndProbeTree();
+   
    // Analysis of events
    std::cout << "The sample size is " << onlinebtag.analysis()->size() << " events" << std::endl;
    std::cout << "---------------------------" << std::endl;
@@ -69,11 +71,14 @@ int main(int argc, char ** argv)
          
       // tag jet selection
          if ( ! onlinebtag.selectionJet(2)                )   continue;
-         if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
-         if ( ! onlinebtag.selectionBJetProbBB(2)         )   continue;
          if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
          if ( ! onlinebtag.selectionBJet(2)               )   continue;
          if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
+      // additional tag selection
+         if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
+         if ( ! onlinebtag.selectionBJetProbBB(2)         )   continue;
+         if ( ! onlinebtag.selectionBJetProbC(2)          )   continue;
+         
          onlinebtag.fillJetHistograms("tag");
          
       // probe jet selection
@@ -82,7 +87,11 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionJetQGlikelihood(1)    )   continue;
          if ( ! onlinebtag.onlineJetMatching(1)           )   continue;
          if ( ! onlinebtag.selectionBJet(1)               )   continue;
+         if ( ! onlinebtag.selectionAI()                  )   continue;
          
+      // fill tree for AI
+         onlinebtag.fillTagAndProbeTree();
+
       // fill tag histograms after selection
          onlinebtag.fillJetHistograms("probe");
          
