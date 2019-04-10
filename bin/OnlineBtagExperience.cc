@@ -64,6 +64,10 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionJetPileupId()         )   continue;
          if ( ! onlinebtag.selectionNJets()               )   continue;
          
+            
+         // jet energy resolution  
+         onlinebtag.actionApplyJER();
+      
       // delta Phi
          if ( ! onlinebtag.selectionJetDphi(1,2)          )   continue;
       // pT imbalance
@@ -73,6 +77,8 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionJet(2)                )   continue;
          if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
          if ( ! onlinebtag.selectionBJet(2)               )   continue;
+         // btag SF
+         onlinebtag.actionApplyBtagSF(2);
          if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
       // additional tag selection
          if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
@@ -87,8 +93,12 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionJetQGlikelihood(1)    )   continue;
          if ( ! onlinebtag.onlineJetMatching(1)           )   continue;
          if ( ! onlinebtag.selectionBJet(1)               )   continue;
-         if ( ! onlinebtag.selectionAI()                  )   continue;
+         // btag SF
+         onlinebtag.actionApplyBtagSF(1);
          
+         
+      // If there is any AI selection, otherwise always true
+         if ( ! onlinebtag.selectionAI()                  )   continue;
       // fill tree for AI
          onlinebtag.fillTagAndProbeTree();
 
@@ -103,56 +113,56 @@ int main(int argc, char ** argv)
       }
       
       
-      if ( onlinebtag.config()->workflow() == 2 )  // ========== DATA and MC with data-like sequence - SEMILEPTONIC ========
-      {
-      
-      // trigger selection
-         if ( ! onlinebtag.selectionHLT()                 )   continue;
-         if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
-      
-      // muon identification selection
-         if ( ! onlinebtag.selectionMuonId()                 )   continue;
-         if ( ! onlinebtag.selectionNMuons()                 )   continue;
-         if ( ! onlinebtag.selectionMuons()                  )   continue;
-         if ( ! onlinebtag.onlineMuonMatching()              )   continue; // FIXME there: should change the selectedMuons ????
-            
-      // jet identification selection
-         if ( ! onlinebtag.selectionJetId()               )   continue;
-         if ( ! onlinebtag.selectionJetPileupId()         )   continue;
-         if ( ! onlinebtag.selectionNJets()               )   continue;
-         
-      // delta Phi
-         if ( ! onlinebtag.selectionJetDphi(1,2)          )   continue;
-      // pT imbalance
-         if ( ! onlinebtag.selectionJetPtImbalance(1,2)   )   continue;
-         
-      // Muon jet association
-         if ( ! onlinebtag.muonJet()                      )   continue;
-         
-      // tag jet selection
-         if ( ! onlinebtag.selectionJet(2)                )   continue;
-         if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
-         if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
-         if ( ! onlinebtag.selectionBJet(2)               )   continue;
-         if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
-         onlinebtag.fillJetHistograms("tag");
-         
-      // probe jet selection
-      // qg likelihood
-         if ( ! onlinebtag.selectionJet(1)                )   continue;
-         if ( ! onlinebtag.selectionJetQGlikelihood(1)    )   continue;
-         if ( ! onlinebtag.onlineJetMatching(1)           )   continue;
-         if ( ! onlinebtag.selectionBJet(1)               )   continue;
-         
-      // fill tag histograms after selection
-         onlinebtag.fillJetHistograms("probe");
-         
-      // PROBE jet match to online
-         if ( ! onlinebtag.onlineBJetMatching(1)          )   continue;
-         
-      // fill probe histograms after selection
-         onlinebtag.fillJetHistograms("probe_match");
-      }
+//       if ( onlinebtag.config()->workflow() == 2 )  // ========== DATA and MC with data-like sequence - SEMILEPTONIC ========
+//       {
+//       
+//       // trigger selection
+//          if ( ! onlinebtag.selectionHLT()                 )   continue;
+//          if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
+//       
+//       // muon identification selection
+//          if ( ! onlinebtag.selectionMuonId()                 )   continue;
+//          if ( ! onlinebtag.selectionNMuons()                 )   continue;
+//          if ( ! onlinebtag.selectionMuons()                  )   continue;
+//          if ( ! onlinebtag.onlineMuonMatching()              )   continue; // FIXME there: should change the selectedMuons ????
+//             
+//       // jet identification selection
+//          if ( ! onlinebtag.selectionJetId()               )   continue;
+//          if ( ! onlinebtag.selectionJetPileupId()         )   continue;
+//          if ( ! onlinebtag.selectionNJets()               )   continue;
+//          
+//       // delta Phi
+//          if ( ! onlinebtag.selectionJetDphi(1,2)          )   continue;
+//       // pT imbalance
+//          if ( ! onlinebtag.selectionJetPtImbalance(1,2)   )   continue;
+//          
+//       // Muon jet association
+//          if ( ! onlinebtag.muonJet()                      )   continue;
+//          
+//       // tag jet selection
+//          if ( ! onlinebtag.selectionJet(2)                )   continue;
+//          if ( ! onlinebtag.selectionJetQGlikelihood(2)    )   continue;
+//          if ( ! onlinebtag.onlineJetMatching(2)           )   continue;
+//          if ( ! onlinebtag.selectionBJet(2)               )   continue;
+//          if ( ! onlinebtag.onlineBJetMatching(2)          )   continue;
+//          onlinebtag.fillJetHistograms("tag");
+//          
+//       // probe jet selection
+//       // qg likelihood
+//          if ( ! onlinebtag.selectionJet(1)                )   continue;
+//          if ( ! onlinebtag.selectionJetQGlikelihood(1)    )   continue;
+//          if ( ! onlinebtag.onlineJetMatching(1)           )   continue;
+//          if ( ! onlinebtag.selectionBJet(1)               )   continue;
+//          
+//       // fill tag histograms after selection
+//          onlinebtag.fillJetHistograms("probe");
+//          
+//       // PROBE jet match to online
+//          if ( ! onlinebtag.onlineBJetMatching(1)          )   continue;
+//          
+//       // fill probe histograms after selection
+//          onlinebtag.fillJetHistograms("probe_match");
+//       }
       
    }
    
