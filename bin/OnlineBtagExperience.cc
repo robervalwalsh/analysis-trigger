@@ -53,7 +53,6 @@ int main(int argc, char ** argv)
 
       if ( onlinebtag.config()->workflow() == 1 )  // ========== DATA and MC with data-like sequence ========
       {
-      
       // trigger selection
          if ( ! onlinebtag.selectionHLT()                 )   continue;
          if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
@@ -64,9 +63,11 @@ int main(int argc, char ** argv)
          if ( ! onlinebtag.selectionJetPileupId()         )   continue;
          if ( ! onlinebtag.selectionNJets()               )   continue;
          
-            
          // jet energy resolution  
          onlinebtag.actionApplyJER();
+         
+         // pileup weight
+         onlinebtag.actionApplyPileupWeight();
       
       // delta Phi
          if ( ! onlinebtag.selectionJetDphi(1,2)          )   continue;
