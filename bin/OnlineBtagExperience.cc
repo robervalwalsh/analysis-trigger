@@ -32,6 +32,34 @@ int main(int argc, char ** argv)
    TH1::SetDefaultSumw2();  // proper treatment of errors when scaling histograms
    
    OnlineBtagAnalyser onlinebtag(argc,argv);
+ 
+   int seed = onlinebtag.seed();
+   // init for splitting MC into eras
+   bool era_split = false; 
+   float total_lumi = 0; 
+   float fraction_accepted = 1; 
+   auto eras = onlinebtag.config()->eras();
+   auto eraslumi = onlinebtag.config()->erasLumi();
+   TFile * fpu[2] = {nullptr,nullptr};
+   TH1D  * hpu[2] = {nullptr,nullptr};
+   TRandom3 * rnd = nullptr;
+   if ( onlinebtag.config()->isMC() && eras.size() == 2 && eraslumi.size() == 2 )
+   {
+      era_split = true;
+      rnd = new TRandom3(seed);
+      // first era is the nominal era, the otheris the rejected era
+      total_lumi = eraslumi[0] + eraslumi[1];
+      fraction_accepted = eraslumi[0]/total_lumi;
+      
+      fpu[0] = new TFile(Form("/nfs/dust/cms/user/walsh/cms/analysis/cmssw/mssmhbb/2017/CMSSW_9_4_13/src/Analysis/Trigger/test/online-btag-2017_v2/qcd/MyDataPileupHistogram_Run%s.root",eras[0].c_str()));
+      hpu[0] = (TH1D*) fpu[0] -> Get("pileup");
+      hpu[0] -> SetName("pileup_0");
+      hpu[0] -> Scale(1./hpu[0]->Integral());
+      fpu[1] = new TFile(Form("/nfs/dust/cms/user/walsh/cms/analysis/cmssw/mssmhbb/2017/CMSSW_9_4_13/src/Analysis/Trigger/test/online-btag-2017_v2/qcd/MyDataPileupHistogram_Run%s.root",eras[1].c_str()));
+      hpu[1] = (TH1D*) fpu[1] -> Get("pileup");
+      hpu[1] -> SetName("pileup_1");
+      hpu[1] -> Scale(1./hpu[1]->Integral());
+   }
    
    onlinebtag.jetHistograms(2,"tag");
    onlinebtag.jetHistograms(2,"probe");
@@ -46,8 +74,6 @@ int main(int argc, char ** argv)
    std::cout << "Workflow index = " << onlinebtag.config()->workflow() << std::endl;
    std::cout << "--------------------" << std::endl;
    
-   int seed = onlinebtag.seed();
-
 // 
    for ( int i = 0 ; i < onlinebtag.nEvents() ; ++i )
    {
@@ -57,6 +83,29 @@ int main(int argc, char ** argv)
 
    // pileup weight
       onlinebtag.actionApplyPileupWeight();
+      
+   // splitting sample according to lumi and pileup profile
+      if ( era_split )
+      {
+         auto hcut = onlinebtag.histogram("cutflow");
+         auto cut = onlinebtag.cutflow();
+         ++cut;
+         if ( std::string(hcut -> GetXaxis()-> GetBinLabel(cut+1)) == "" )
+            hcut -> GetXaxis()-> SetBinLabel(cut+1,Form("Selecting according to era %s",eras[0].c_str()));
+   
+         float truepu = onlinebtag.trueInteractionsWeighted();
+         float pufrac[2];
+         pufrac[0] = fraction_accepted      * hpu[0] -> GetBinContent(hpu[0] -> FindBin(truepu));
+         pufrac[1] = (1.-fraction_accepted) * hpu[1] -> GetBinContent(hpu[1] -> FindBin(truepu));
+         pufrac[0] /= (pufrac[0]+pufrac[1]);
+         pufrac[1] /= (pufrac[0]+pufrac[1]);
+         auto x = rnd->Rndm();
+         if ( x >  pufrac[0] ) continue;
+         
+         hcut -> Fill(cut,onlinebtag.weight());
+         onlinebtag.cutflow(cut);
+      }
+      
       
    // trigger selection
       if ( ! onlinebtag.selectionHLT()                 )   continue;
@@ -102,7 +151,7 @@ int main(int argc, char ** argv)
    // reweight 2017F - too weird!?
 //      reweightFtoCDE(onlinebtag);
    // reweight QCD to data CDE
-      reweightQCDtoDataEta(onlinebtag);
+//      reweightQCDtoDataEta(onlinebtag);
       
    // If there is any AI selection, otherwise always true
       if ( ! onlinebtag.selectionAI()                  )   continue;
