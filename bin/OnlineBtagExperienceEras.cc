@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
          if ( hera_ )
          {
             auto x = rnd->Rndm();
-            std::string era = (onlinebtag.config()->era())[hera_->FindBin(x)-1];
+            std::string era = (onlinebtag.config()->eras())[hera_->FindBin(x)-1];
 
                if ( ! ProcessEvent(onlinebtag,era) ) continue;
          }
@@ -152,10 +152,10 @@ bool ProcessEvent(OnlineBtagAnalyser & onlinebtag, const std::string & era)
 // ===================================================================
 int Eras(OnlineBtagAnalyser & onlinebtag)
 {
-   std::vector<std::string> eras    = onlinebtag.config()->era();
-   std::vector<float>       eralumi = onlinebtag.config()->eraLumi();
+   std::vector<std::string> eras     = onlinebtag.config()->eras();
+   std::vector<float>       eraslumi = onlinebtag.config()->erasLumi();
    
-   if ( eras.size() != eralumi.size() )
+   if ( eras.size() != eraslumi.size() )
    {
       std::cout << std::endl;
       std::cout << "======================================================" << std::endl;
@@ -180,13 +180,13 @@ int Eras(OnlineBtagAnalyser & onlinebtag)
    std::vector<float>       fraclumi;
    std::vector<float>       cumlumi;
    float totallumi = 0;
-   for ( auto & el: eralumi ) totallumi += el;
+   for ( auto & el: eraslumi ) totallumi += el;
    
    cumlumi.push_back(0);
    for ( auto & era : eras )
    {
       auto i = &era - &eras[0];
-      float fl = eralumi[i]/totallumi;
+      float fl = eraslumi[i]/totallumi;
       fraclumi.push_back(fl);
       cumlumi.push_back(cumlumi.back()+fl);
       onlinebtag.jetHistograms(2,Form("tag_%s",era.c_str()));

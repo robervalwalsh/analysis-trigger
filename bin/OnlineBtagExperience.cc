@@ -32,10 +32,67 @@ int main(int argc, char ** argv)
    TH1::SetDefaultSumw2();  // proper treatment of errors when scaling histograms
    
    OnlineBtagAnalyser onlinebtag(argc,argv);
+ 
+   // check if it is MC
+   bool isMC = onlinebtag.config()->isMC();
+   
+   // eras and corresponding lumis
+   auto eras = onlinebtag.config()->eras();
+   auto eraslumi = onlinebtag.config()->erasLumi();
+   
+   // prescaling data
+   int seedps = 4321;
+   if ( onlinebtag.seed() <= 0 ) seedps += 1;
+   else seedps += onlinebtag.seed();
+   TRandom3 * rndps = nullptr;
+   float ps = -1;
+   if ( ! isMC && eras.size() > 0 )
+   {
+      if ( eras[0] == "2017C" and onlinebtag.config()->index() == 1 )
+      {
+         ps = 20;
+         rndps = new TRandom3(seedps);
+      }
+   }
+      
+   int seed = 1234;
+   if ( onlinebtag.seed() <= 0 ) seed += 1;
+   else seed += onlinebtag.seed();
+   
+   
+   // init for splitting MC into eras
+   bool era_split = false; 
+   float total_lumi = 0; 
+   float fraction_accepted = 1; 
+   TFile * fpu[2] = {nullptr,nullptr};
+   TH1D  * hpu[2] = {nullptr,nullptr};
+   TRandom3 * rnd = nullptr;
+   if ( isMC && eras.size() == 2 && eraslumi.size() == 2 )
+   {
+      era_split = true;
+      rnd = new TRandom3(seed);
+      // first era is the nominal era, the otheris the rejected era
+      total_lumi = eraslumi[0] + eraslumi[1];
+      fraction_accepted = eraslumi[0]/total_lumi;
+      //  fraction CDE / F
+      total_lumi = 1.;
+      if ( eras[0] == "2017CDE" ) fraction_accepted = 0.65;
+      else fraction_accepted = 0.35;
+      
+      fpu[0] = new TFile(Form("/nfs/dust/cms/user/walsh/cms/analysis/cmssw/mssmhbb/2017/CMSSW_9_4_13/src/Analysis/Trigger/test/online-btag-2017_v2/qcd/MyDataPileupHistogram_Run%s.root",eras[0].c_str()));
+      hpu[0] = (TH1D*) fpu[0] -> Get("pileup");
+      hpu[0] -> SetName("pileup_0");
+      hpu[0] -> Scale(1./hpu[0]->Integral());
+      fpu[1] = new TFile(Form("/nfs/dust/cms/user/walsh/cms/analysis/cmssw/mssmhbb/2017/CMSSW_9_4_13/src/Analysis/Trigger/test/online-btag-2017_v2/qcd/MyDataPileupHistogram_Run%s.root",eras[1].c_str()));
+      hpu[1] = (TH1D*) fpu[1] -> Get("pileup");
+      hpu[1] -> SetName("pileup_1");
+      hpu[1] -> Scale(1./hpu[1]->Integral());
+   }
    
    onlinebtag.jetHistograms(2,"tag");
    onlinebtag.jetHistograms(2,"probe");
    onlinebtag.jetHistograms(2,"probe_match");
+   if ( isMC ) onlinebtag.pileupHistogram();
    
    onlinebtag.tagAndProbeTree();
    
@@ -46,15 +103,46 @@ int main(int argc, char ** argv)
    std::cout << "Workflow index = " << onlinebtag.config()->workflow() << std::endl;
    std::cout << "--------------------" << std::endl;
    
-   int seed = onlinebtag.seed();
-
 // 
    for ( int i = 0 ; i < onlinebtag.nEvents() ; ++i )
    {
       bool goodEvent = onlinebtag.event(i);
 
       if ( ! goodEvent ) continue;
+      
+   // splitting sample according to lumi and pileup profile
+      if ( era_split )
+      {
+         auto hcut = onlinebtag.histogram("cutflow");
+         auto cut = onlinebtag.cutflow();
+         ++cut;
+         if ( std::string(hcut -> GetXaxis()-> GetBinLabel(cut+1)) == "" )
+            hcut -> GetXaxis()-> SetBinLabel(cut+1,Form("Selecting according to era %s",eras[0].c_str()));
+   
+         float truepu = onlinebtag.trueInteractions();
+         float pufrac[2];
+         pufrac[0] = fraction_accepted      * hpu[0] -> GetBinContent(hpu[0] -> FindBin(truepu));
+         pufrac[1] = (1.-fraction_accepted) * hpu[1] -> GetBinContent(hpu[1] -> FindBin(truepu));
+         pufrac[0] /= (pufrac[0]+pufrac[1]);
+         pufrac[1] /= (pufrac[0]+pufrac[1]);
+         auto x = rnd->Rndm();
+         
+         if ( eras[0] == "2017CDE" ) 
+         {
+            if ( x >  pufrac[0] ) continue;
+         }
+         else
+         {
+            if ( x <  (1-pufrac[0]) ) continue;
+         }
+         
+         hcut -> Fill(cut,onlinebtag.weight());
+         onlinebtag.cutflow(cut);
+         onlinebtag.fillPileupHistogram();
 
+      }
+
+      
    // pileup weight
       onlinebtag.actionApplyPileupWeight();
       
@@ -62,6 +150,22 @@ int main(int argc, char ** argv)
       if ( ! onlinebtag.selectionHLT()                 )   continue;
       if ( ! onlinebtag.selectionL1 ()                 )   continue;  // to be used in case of "OR" of seeds
    
+      // prescale 2017C bin1
+      if ( rndps )
+      {
+         auto hcut = onlinebtag.histogram("cutflow");
+         auto cut = onlinebtag.cutflow();
+         ++cut;
+         if ( std::string(hcut -> GetXaxis()-> GetBinLabel(cut+1)) == "" )
+            hcut -> GetXaxis()-> SetBinLabel(cut+1,Form("Prescaling to %3.1f for era %s, bin %d",ps,eras[0].c_str(),onlinebtag.config()->index()));
+         
+         auto x = rndps->Rndm();
+         if ( x > 1./ps ) continue;
+         
+         hcut -> Fill(cut,onlinebtag.weight());
+         onlinebtag.cutflow(cut);
+      }
+
          
    // jet identification selection
       if ( ! onlinebtag.selectionJetId()               )   continue;
@@ -102,7 +206,7 @@ int main(int argc, char ** argv)
    // reweight 2017F - too weird!?
 //      reweightFtoCDE(onlinebtag);
    // reweight QCD to data CDE
-      reweightQCDtoDataEta(onlinebtag);
+//   if ( eras[0] == "2017CDE" )  reweightQCDtoDataEta(onlinebtag);
       
    // If there is any AI selection, otherwise always true
       if ( ! onlinebtag.selectionAI()                  )   continue;
@@ -118,6 +222,16 @@ int main(int argc, char ** argv)
    // fill probe histograms after selection
       onlinebtag.fillJetHistograms("probe_match");
    }
+   
+   // this is not a good idea - use scale instead
+//    if ( isMC && onlinebtag.config()->crossSection() > 0 )
+//    {
+//       float ngen = onlinebtag.histogram("cutflow") -> GetBinContent(4);
+//       float xsection = onlinebtag.config()->crossSection();
+//       float genlumi = ngen/xsection;
+//       float scale = eraslumi[0]/genlumi;
+//       onlinebtag.scale(scale);
+//    }
    
 } //end main
 
