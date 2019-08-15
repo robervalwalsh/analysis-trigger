@@ -182,14 +182,14 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
    int j1 = r1-1;
    int j2 = r2-1;
    
-   if ( config_->isMC() && ( config_ -> useJetsFlavour() || config_ -> useJetsExtendedFlavour() ))
+   if ( config_->isMC() && config_ -> histogramJetsPerFlavour() )
    {
-      if ( config_ -> useJetsFlavour() )
+      if ( ! config_ -> useJetsExtendedFlavour() )
       {
          probe_flavour_ = abs(selectedJets_[j1]->flavour());
          tag_flavour_   = abs(selectedJets_[j2]->flavour());
       }
-      if ( config_ -> useJetsExtendedFlavour() )
+      else
       {
          std::string probe_flv = selectedJets_[j1]->extendedFlavour();
          std::string tag_flv   = selectedJets_[j2]->extendedFlavour();
