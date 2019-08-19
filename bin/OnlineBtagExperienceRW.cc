@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
    onlinebtag.jetHistograms(2,"tag");
    onlinebtag.jetHistograms(2,"probe");
    onlinebtag.jetHistograms(2,"probe_match");
-   if ( isMC ) onlinebtag.pileupHistogram();
+//   if ( isMC ) onlinebtag.pileupHistogram();
    
    onlinebtag.tagAndProbeTree();
    
@@ -139,13 +139,13 @@ int main(int argc, char ** argv)
          
          hcut -> Fill(cut,onlinebtag.weight());
          onlinebtag.cutflow(cut);
-         onlinebtag.fillPileupHistogram();
+//         onlinebtag.fillPileupHistogram();
 
       }
 
       
    // pileup weight
-      onlinebtag.actionApplyPileupWeight();
+//      onlinebtag.actionApplyPileupWeight();
       
    // trigger selection
       if ( ! onlinebtag.selectionHLT()                 )   continue;
