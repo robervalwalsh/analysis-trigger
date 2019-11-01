@@ -171,7 +171,7 @@ void OnlineBtagAnalyser::tagAndProbeTree()
 void OnlineBtagAnalyser::fillTagAndProbeTree()
 {
    if ( ! do_tree_ ) return;
-   std::string algo = config_->btagalgo_;
+   std::string algo = config_->btagAlgorithm();
    if ( ! do_tree_ || algo != "deepflavour" ) return;
    ++ cutflow_;
    if ( std::string(h1_["cutflow"] -> GetXaxis()-> GetBinLabel(cutflow_+1)) == "" ) 
