@@ -1,1 +1,0 @@
-../ntupleslists/jetht_2017E_ntuples.txt
