@@ -26,50 +26,51 @@ int main(int argc, char **argv)
 
    auto config = onlinebtag.config();
    auto workflow = config->workflow();
-   bool isMC = config->isMC();
 
    // Jets in the analysis
    int tag   = config->tagJet();
    int probe = config->probeJet();
 
-   if (workflow == 1) // nominal MSSM Hbb workflow with btag selection
+   onlinebtag.jetHistograms(config->nJetsMin(),"tag");
+   onlinebtag.jetHistograms(config->nJetsMin(),"probe");
+   onlinebtag.jetHistograms(config->nJetsMin(),"probe_match");
+
+   for (int i = 0; i < onlinebtag.nEvents(); ++i)
    {
-      for (int i = 0; i < onlinebtag.nEvents(); ++i)
-      {
-         // ========   GENERAL SELECTION    ==========
-         if (!onlinebtag.event(i))                             continue;
-         if (!onlinebtag.triggerSelection())                   continue;
-         if (!onlinebtag.selectionPrimaryVertex())             continue;
-         if (!onlinebtag.selectionJetId())                     continue;
-         if (!onlinebtag.selectionJetPileupId())               continue;
-         if (!onlinebtag.selectionNJets())                     continue;
-         onlinebtag.actionApplyBjetRegression();                           
-         onlinebtag.actionApplyJER();                                      
-         if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
-         if (!onlinebtag.selectionJetPtImbalance(tag,probe))   continue;
+      // ========   GENERAL SELECTION    ==========
+      if (!onlinebtag.event(i))                             continue;
+      if (!onlinebtag.selectionHLT())                       continue;
+      if (!onlinebtag.selectionL1 ())                       continue;
+      if (!onlinebtag.selectionPrimaryVertex())             continue;
+      if (!onlinebtag.selectionJetId())                     continue;
+      if (!onlinebtag.selectionJetPileupId())               continue;
+      if (!onlinebtag.selectionNJets())                     continue;
+      onlinebtag.actionApplyBjetRegression();                           
+      onlinebtag.actionApplyJER();                                      
+      if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
+      if (!onlinebtag.selectionJetPtImbalance(tag,probe))   continue;
 
-         // ========   TAG SELECTION    ==========
-         if (!onlinebtag.selectionJet(tag))                    continue;   
-         if (!onlinebtag.onlineJetMatching(tag))               continue;
-         if (!onlinebtag.selectionBJet(tag))                   continue;
-         onlinebtag.actionApplyBtagSF(tag);
-         if (!onlinebtag.onlineBJetMatching(tag))              continue;
-         // additional tag selection
-         if (!onlinebtag.selectionJetQGlikelihood(tag))        continue;
-         if (!onlinebtag.selectionBJetProbBB(tag))             continue;
-         if (!onlinebtag.selectionBJetProbC(tag))              continue;
-         onlinebtag.fillJetHistograms("tag");
+      // ========   TAG SELECTION    ==========
+      if (!onlinebtag.selectionJet(tag))                    continue;   
+      if (!onlinebtag.onlineJetMatching(tag))               continue;
+      if (!onlinebtag.selectionBJet(tag))                   continue;
+      onlinebtag.actionApplyBtagSF(tag);
+      if (!onlinebtag.onlineBJetMatching(tag))              continue;
+      // additional tag selection
+      if (!onlinebtag.selectionJetQGlikelihood(tag))        continue;
+      if (!onlinebtag.selectionBJetProbBB(tag))             continue;
+      if (!onlinebtag.selectionBJetProbC(tag))              continue;
+      onlinebtag.fillJetHistograms("tag");
 
-         // ========   PROBE SELECTION    ==========
-         if (!onlinebtag.selectionJet(probe))                  continue;
-         if (!onlinebtag.onlineJetMatching(probe))             continue;
-         if (!onlinebtag.selectionBJet(probe))                 continue;
-         onlinebtag.actionApplyBtagSF(probe);
-         onlinebtag.fillJetHistograms("probe");
-         // ========   PROBE MATCHING    ==========
-         if (!onlinebtag.onlineBJetMatching(probe))              continue;
-         onlinebtag.fillJetHistograms("probe_match");
+      // ========   PROBE SELECTION    ==========
+      if (!onlinebtag.selectionJet(probe))                  continue;
+      if (!onlinebtag.onlineJetMatching(probe))             continue;
+      if (!onlinebtag.selectionBJet(probe))                 continue;
+      onlinebtag.actionApplyBtagSF(probe);
+      onlinebtag.fillJetHistograms("probe");
+      // ========   PROBE MATCHING    ==========
+      if (!onlinebtag.onlineBJetMatching(probe))            continue;
+      onlinebtag.fillJetHistograms("probe_match");
 
       } // end loop
-   }    // end workflow 1
 }
