@@ -35,6 +35,8 @@ int main(int argc, char **argv)
    onlinebtag.jetHistograms(config->nJetsMin(),"probe");
    onlinebtag.jetHistograms(config->nJetsMin(),"probe_match");
 
+   onlinebtag.tagAndProbeTree();
+
    for (int i = 0; i < onlinebtag.nEvents(); ++i)
    {
       // ========   GENERAL SELECTION    ==========
@@ -48,7 +50,10 @@ int main(int argc, char **argv)
       onlinebtag.actionApplyBjetRegression();                           
       onlinebtag.actionApplyJER();                                      
       if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
-      if (!onlinebtag.selectionJetPtImbalance(tag,probe))   continue;
+      if ( workflow == 2 )
+      {
+         if (!onlinebtag.dijetTagAndProbe())                continue;
+      }
 
       // ========   TAG SELECTION    ==========
       if (!onlinebtag.selectionJet(tag))                    continue;   
@@ -68,8 +73,16 @@ int main(int argc, char **argv)
       if (!onlinebtag.selectionBJet(probe))                 continue;
       onlinebtag.actionApplyBtagSF(probe);
       onlinebtag.fillJetHistograms("probe");
+      if ( workflow == 3 )
+      {
+         onlinebtag.probeMatch(onlinebtag.onlineBJetMatching(probe));
+         onlinebtag.fillTagAndProbeTree();
+      }
       // ========   PROBE MATCHING    ==========
-      if (!onlinebtag.onlineBJetMatching(probe))            continue;
+      if ( workflow != 3)
+      {
+         if (!onlinebtag.onlineBJetMatching(probe))            continue;
+      }
       onlinebtag.fillJetHistograms("probe_match");
 
       } // end loop

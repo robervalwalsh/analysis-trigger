@@ -39,6 +39,8 @@ OnlineBtagAnalyser::OnlineBtagAnalyser(int argc, char ** argv) : BaseAnalyser(ar
    use_ai_ = false;
    reader_ai_ = nullptr;
    tools_ai_  = nullptr;
+   probe_jet_ = config_->probeJet()-1;
+   tag_jet_ = config_->tagJet()-1;
    tag_flavour_ = 0;
    probe_flavour_ = 0;
    ptimbalance_ = -1;
@@ -54,6 +56,10 @@ OnlineBtagAnalyser::OnlineBtagAnalyser(int argc, char ** argv) : BaseAnalyser(ar
    tag_prob_light_ = -1;
    tag_pt_ = -1;
    tag_eta_ = -10;
+   probe_match_ = 0;
+   jet3_pt_ = -1;
+   jet3_eta_ = -10;
+   process_id_ = -1;
    
    
    if ( config_->methodAI() != "" || config_->directoryAI() != "" || config_->variablesAI("F").size() != 0 )
@@ -147,6 +153,7 @@ void OnlineBtagAnalyser::tagAndProbeTree()
    if ( ! do_tree_ ) return;
    this->output()->cd();
    tagprobe_tree_ = std::make_shared<TTree>("TagAndProbe","TTree with variables for the online btag tag and probe");
+   tagprobe_tree_ -> Branch("process_id",&process_id_,"process_id/I");
    tagprobe_tree_ -> Branch("tag_flavour",&tag_flavour_,"tag_flavour/I");
    tagprobe_tree_ -> Branch("probe_flavour",&probe_flavour_,"probe_flavour/I");
    tagprobe_tree_ -> Branch("ptimbalance",&ptimbalance_,"ptimbalance/F");
@@ -164,6 +171,9 @@ void OnlineBtagAnalyser::tagAndProbeTree()
    tagprobe_tree_ -> Branch("tag_eta",&tag_eta_,"tag_eta/F");
    tagprobe_tree_ -> Branch("probe_pt",&probe_pt_,"probe_pt/F");
    tagprobe_tree_ -> Branch("probe_eta",&probe_eta_,"probe_eta/F");
+   tagprobe_tree_ -> Branch("probe_match",&probe_match_,"probe_match/I");
+   tagprobe_tree_ -> Branch("jet3_pt",&jet3_pt_,"jet3_pt/F");
+   tagprobe_tree_ -> Branch("jet3_eta",&jet3_eta_,"jet3_eta/F");
    tagprobe_tree_ -> Branch("weight",&tpweight_,"weight/F");
    
 }
@@ -176,23 +186,18 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
    ++ cutflow_;
    if ( std::string(h1_["cutflow"] -> GetXaxis()-> GetBinLabel(cutflow_+1)) == "" ) 
       h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,"Fill TagAndProbe tree");
-   
-   int r1 = 1;
-   int r2 = 2;
-   int j1 = r1-1;
-   int j2 = r2-1;
-   
+
    if ( config_->isMC() && config_ -> histogramJetsPerFlavour() )
    {
       if ( ! config_ -> useJetsExtendedFlavour() )
       {
-         probe_flavour_ = abs(selectedJets_[j1]->flavour());
-         tag_flavour_   = abs(selectedJets_[j2]->flavour());
+         probe_flavour_ = abs(selectedJets_[probe_jet_]->flavour());
+         tag_flavour_   = abs(selectedJets_[tag_jet_]->flavour());
       }
       else
       {
-         std::string probe_flv = selectedJets_[j1]->extendedFlavour();
-         std::string tag_flv   = selectedJets_[j2]->extendedFlavour();
+         std::string probe_flv = selectedJets_[probe_jet_]->extendedFlavour();
+         std::string tag_flv   = selectedJets_[tag_jet_]->extendedFlavour();
          if      ( probe_flv == "b"  ) probe_flavour_ = 5;
          else if ( probe_flv == "c"  ) probe_flavour_ = 4;
          else if ( probe_flv == "bb" ) probe_flavour_ = 55;
@@ -209,7 +214,7 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
    }
 
    // variables for the tmva tree
-   variables_ai(r1,r2);   
+   variables_ai();   
    
    tpweight_         = weight_;
    
@@ -218,25 +223,29 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
 
 }
 
-void OnlineBtagAnalyser::variables_ai(const int & r1, const int & r2)
+void OnlineBtagAnalyser::variables_ai()
 {
-   int j1 = r1-1;
-   int j2 = r2-1;
-   ptimbalance_      = fabs(selectedJets_[j1]->pt() - selectedJets_[j2]->pt())/selectedJets_[j1]->pt();
-   dphi_             = fabs(selectedJets_[j1]->deltaPhi(*selectedJets_[j2]));
-   deta_             = fabs(selectedJets_[j1]->eta() - selectedJets_[j2]->eta());
-   dr_               = fabs(selectedJets_[j1]->deltaR(*selectedJets_[j2]));
-   tag_qglikelihood_ = selectedJets_[j2]->qgLikelihood();
-   tag_prob_b_       = selectedJets_[j2]->btag("btag_dfb");
-   tag_prob_bb_      = selectedJets_[j2]->btag("btag_dfbb");
-   tag_prob_lepb_    = selectedJets_[j2]->btag("btag_dflepb");
-   tag_prob_c_       = selectedJets_[j2]->btag("btag_dfc");
-   tag_prob_g_       = selectedJets_[j2]->btag("btag_dfg");
-   tag_prob_light_   = selectedJets_[j2]->btag("btag_dflight");
-   tag_pt_           = selectedJets_[j2]->pt();
-   tag_eta_          = selectedJets_[j2]->eta();
-   probe_pt_         = selectedJets_[j1]->pt();
-   probe_eta_        = selectedJets_[j1]->eta();
+   process_id_       = config_->processId();
+   ptimbalance_      = fabs(selectedJets_[probe_jet_]->pt() - selectedJets_[tag_jet_]->pt())/selectedJets_[probe_jet_]->pt();
+   dphi_             = fabs(selectedJets_[probe_jet_]->deltaPhi(*selectedJets_[tag_jet_]));
+   deta_             = fabs(selectedJets_[probe_jet_]->eta() - selectedJets_[tag_jet_]->eta());
+   dr_               = fabs(selectedJets_[probe_jet_]->deltaR(*selectedJets_[tag_jet_]));
+   tag_qglikelihood_ = selectedJets_[tag_jet_]->qgLikelihood();
+   tag_prob_b_       = selectedJets_[tag_jet_]->btag("btag_dfb");
+   tag_prob_bb_      = selectedJets_[tag_jet_]->btag("btag_dfbb");
+   tag_prob_lepb_    = selectedJets_[tag_jet_]->btag("btag_dflepb");
+   tag_prob_c_       = selectedJets_[tag_jet_]->btag("btag_dfc");
+   tag_prob_g_       = selectedJets_[tag_jet_]->btag("btag_dfg");
+   tag_prob_light_   = selectedJets_[tag_jet_]->btag("btag_dflight");
+   tag_pt_           = selectedJets_[tag_jet_]->pt();
+   tag_eta_          = selectedJets_[tag_jet_]->eta();
+   probe_pt_         = selectedJets_[probe_jet_]->pt();
+   probe_eta_        = selectedJets_[probe_jet_]->eta();
+   if ( selectedJets_.size() > 2 )
+   {
+      jet3_pt_       = selectedJets_[2]->pt();
+      jet3_eta_      = selectedJets_[2]->eta();
+   }
    
    varsf_ai_["ptimbalance"]      = ptimbalance_;
    varsf_ai_["dphi"]             = dphi_;
@@ -253,7 +262,6 @@ void OnlineBtagAnalyser::variables_ai(const int & r1, const int & r2)
    varsf_ai_["abs(tag_eta)"]     = fabs(tag_eta_);
    varsf_ai_["probe_pt"]         = probe_pt_;
    varsf_ai_["abs(probe_eta)"]   = fabs(probe_eta_);
-   
    
 }
 
@@ -280,7 +288,7 @@ bool OnlineBtagAnalyser::selectionAI()
             h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,Form("AI %s: %5.3f < discriminator < %5.3f",methodName_ai_.Data(),config_->discriminatorMinAI(),config_->discriminatorMaxAI()));
       }
    }
-   variables_ai(1,2);
+   variables_ai();
    
    // all possible variables, but if training done with less that will be controlled from the config
    // vector<float> varsf_ai_ | vector<int> varsi_ai_  (see loops below)
@@ -299,4 +307,26 @@ bool OnlineBtagAnalyser::selectionAI()
       
    h1_["cutflow"] -> Fill(cutflow_,weight_);
    return true;
+}
+
+
+bool OnlineBtagAnalyser::dijetTagAndProbe()
+{
+   bool is_dijet = true;
+   std::string label = "3rd jet veto: if pt3 > 0.3*(pt1+pt2)/2";
+   if ( selectedJets_.size() > 2 )
+   {
+      float mean_pt1_pt2 = (selectedJets_[0]->pt()+selectedJets_[1]->pt())/2;
+      is_dijet = (selectedJets_[2]->pt() < 0.3*mean_pt1_pt2);
+   }
+
+   cutflow(label, is_dijet);
+
+   return is_dijet;
+}
+
+void OnlineBtagAnalyser::probeMatch(const bool & match)
+{
+   if ( match ) probe_match_ = 1;
+   else probe_match_ = 0;
 }

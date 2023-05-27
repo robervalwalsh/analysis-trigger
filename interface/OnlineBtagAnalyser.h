@@ -50,6 +50,8 @@ namespace analysis {
             bool do_tree_;
             bool use_ai_;
             std::shared_ptr<TTree> tagprobe_tree_;
+            int probe_jet_;
+            int tag_jet_;
             int tag_flavour_;
             int probe_flavour_;
             float ptimbalance_;
@@ -67,6 +69,10 @@ namespace analysis {
             float tag_eta_;
             float probe_pt_;
             float probe_eta_;
+            int   probe_match_;
+            float jet3_pt_;
+            float jet3_eta_;
+            int   process_id_;
             float tpweight_;
             TMVA::Reader *reader_ai_; 
             std::shared_ptr<TMVA::Tools> tools_ai_;
@@ -79,13 +85,17 @@ namespace analysis {
             Int_t spec1_, spec2_;
                            
          private:
-            void variables_ai(const int &, const int &);
+            void variables_ai();
                
          public:
            virtual bool muonJet(const bool & swap = true);
            void fillTagAndProbeTree();
            void tagAndProbeTree();
            bool selectionAI();
+           /// veto events with a 3rd jet
+           bool dijetTagAndProbe();
+           /// probe match
+           void probeMatch(const bool &);
 
       };
    }
