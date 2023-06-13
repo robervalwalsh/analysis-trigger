@@ -50,14 +50,33 @@ namespace analysis {
             bool do_tree_;
             bool use_ai_;
             std::shared_ptr<TTree> tagprobe_tree_;
-            int probe_jet_;
-            int tag_jet_;
-            int tag_flavour_;
-            int probe_flavour_;
+            /// General parameters
+            int   process_id_;
+            /// Correlations
             float ptimbalance_;
             float dphi_;
             float deta_;
-            float dr_;
+            float dr_;            
+            /// Probe variables
+            int probe_jet_;
+            int probe_flavour_;
+            float probe_qglikelihood_;
+            float probe_prob_b_;
+            float probe_prob_bb_;
+            float probe_prob_lepb_;
+            float probe_prob_c_;
+            float probe_prob_g_;
+            float probe_prob_light_;
+            float probe_pt_;
+            float probe_eta_;
+            float probe_phi_;
+            int   probe_match_;
+            float probe_btag_sfl_;
+            float probe_btag_sfm_;
+            float probe_btag_sft_;
+            /// tag variables
+            int tag_jet_;
+            int tag_flavour_;
             float tag_qglikelihood_;
             float tag_prob_b_;
             float tag_prob_bb_;
@@ -67,12 +86,16 @@ namespace analysis {
             float tag_prob_light_;
             float tag_pt_;
             float tag_eta_;
-            float probe_pt_;
-            float probe_eta_;
-            int   probe_match_;
+            float tag_phi_;
+            int   tag_match_;
+            float tag_btag_sfl_;
+            float tag_btag_sfm_;
+            float tag_btag_sft_;
+            /// Jet3 varibles
             float jet3_pt_;
             float jet3_eta_;
-            int   process_id_;
+            float jet3_phi_;
+            /// event weight 
             float tpweight_;
             TMVA::Reader *reader_ai_; 
             std::shared_ptr<TMVA::Tools> tools_ai_;
@@ -96,6 +119,8 @@ namespace analysis {
            bool dijetTagAndProbe();
            /// probe match
            void probeMatch(const bool &);
+           /// tag match
+           void tagMatch(const bool &);
 
       };
    }

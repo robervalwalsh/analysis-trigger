@@ -39,14 +39,34 @@ OnlineBtagAnalyser::OnlineBtagAnalyser(int argc, char ** argv) : BaseAnalyser(ar
    use_ai_ = false;
    reader_ai_ = nullptr;
    tools_ai_  = nullptr;
-   probe_jet_ = config_->probeJet()-1;
-   tag_jet_ = config_->tagJet()-1;
-   tag_flavour_ = 0;
-   probe_flavour_ = 0;
+   /// General parameters
+   process_id_ = -1;
+   /// Correlations
    ptimbalance_ = -1;
    dphi_ = -1;
    deta_ = -1;
    dr_ = -1;
+   /// Probe variables
+   probe_jet_ = config_->probeJet()-1;
+   probe_flavour_ = -1;
+   probe_qglikelihood_ = -1;
+   probe_prob_b_ = -1;
+   probe_prob_bb_ = -1;
+   probe_prob_lepb_ = -1;
+   probe_prob_c_ = -1;
+   probe_prob_g_ = -1;
+   probe_prob_light_ = -1;
+   probe_pt_ = -1;
+   probe_eta_ = -10;
+   probe_phi_ = -100;
+   probe_match_ = 0;
+   probe_btag_sfl_ = 1;
+   probe_btag_sfm_ = 1;
+   probe_btag_sft_ = 1;
+
+   /// tag variables
+   tag_jet_ = config_->tagJet()-1;
+   tag_flavour_ = -1;
    tag_qglikelihood_ = -1;
    tag_prob_b_ = -1;
    tag_prob_bb_ = -1;
@@ -56,11 +76,19 @@ OnlineBtagAnalyser::OnlineBtagAnalyser(int argc, char ** argv) : BaseAnalyser(ar
    tag_prob_light_ = -1;
    tag_pt_ = -1;
    tag_eta_ = -10;
-   probe_match_ = 0;
+   tag_phi_ = -100;
+   tag_match_ = 0;
+   tag_btag_sfl_ = 1;
+   tag_btag_sfm_ = 1;
+   tag_btag_sft_ = 1;
+
+
+   /// Jet3 variables
    jet3_pt_ = -1;
    jet3_eta_ = -10;
-   process_id_ = -1;
-   
+   jet3_phi_ = -100;
+   /// event weight
+   tpweight_ = 0;
    
    if ( config_->methodAI() != "" || config_->directoryAI() != "" || config_->variablesAI("F").size() != 0 )
    {
@@ -154,12 +182,33 @@ void OnlineBtagAnalyser::tagAndProbeTree()
    this->output()->cd();
    tagprobe_tree_ = std::make_shared<TTree>("TagAndProbe","TTree with variables for the online btag tag and probe");
    tagprobe_tree_ -> Branch("process_id",&process_id_,"process_id/I");
-   tagprobe_tree_ -> Branch("tag_flavour",&tag_flavour_,"tag_flavour/I");
-   tagprobe_tree_ -> Branch("probe_flavour",&probe_flavour_,"probe_flavour/I");
+   /// Correlations
    tagprobe_tree_ -> Branch("ptimbalance",&ptimbalance_,"ptimbalance/F");
    tagprobe_tree_ -> Branch("dphi",&dphi_,"dphi/F");
    tagprobe_tree_ -> Branch("deta",&deta_,"deta/F");
    tagprobe_tree_ -> Branch("dr",&dr_,"dr/F");
+
+   /// Probe variables
+   tagprobe_tree_ -> Branch("probe_jet",&probe_jet_,"probe_jet/I");
+   tagprobe_tree_ -> Branch("probe_flavour",&probe_flavour_,"probe_flavour/I");
+   tagprobe_tree_ -> Branch("probe_qglikelihood",&probe_qglikelihood_,"probe_qglikelihood/F");
+   tagprobe_tree_ -> Branch("probe_prob_b",&probe_prob_b_,"probe_prob_b/F");
+   tagprobe_tree_ -> Branch("probe_prob_bb",&probe_prob_bb_,"probe_prob_bb/F");
+   tagprobe_tree_ -> Branch("probe_prob_lepb",&probe_prob_lepb_,"probe_prob_lepb/F");
+   tagprobe_tree_ -> Branch("probe_prob_c",&probe_prob_c_,"probe_prob_c_/F");
+   tagprobe_tree_ -> Branch("probe_prob_g",&probe_prob_g_,"probe_prob_g/F");
+   tagprobe_tree_ -> Branch("probe_prob_light",&probe_prob_light_,"probe_prob_light/F");
+   tagprobe_tree_ -> Branch("probe_pt",&probe_pt_,"probe_pt/F");
+   tagprobe_tree_ -> Branch("probe_eta",&probe_eta_,"probe_eta/F");
+   tagprobe_tree_ -> Branch("probe_phi",&probe_phi_,"probe_phi/F");
+   tagprobe_tree_ -> Branch("probe_match",&probe_match_,"probe_match/I");
+   tagprobe_tree_ -> Branch("probe_btag_sfl",&probe_btag_sfl_,"probe_btag_sfl/F");
+   tagprobe_tree_ -> Branch("probe_btag_sfm",&probe_btag_sfm_,"probe_btag_sfm/F");
+   tagprobe_tree_ -> Branch("probe_btag_sft",&probe_btag_sft_,"probe_btag_sft/F");
+
+   /// Tag variables
+   tagprobe_tree_ -> Branch("tag_jet",&tag_jet_,"tag_jet/I");
+   tagprobe_tree_ -> Branch("tag_flavour",&tag_flavour_,"tag_flavour/I");
    tagprobe_tree_ -> Branch("tag_qglikelihood",&tag_qglikelihood_,"tag_qglikelihood/F");
    tagprobe_tree_ -> Branch("tag_prob_b",&tag_prob_b_,"tag_prob_b/F");
    tagprobe_tree_ -> Branch("tag_prob_bb",&tag_prob_bb_,"tag_prob_bb/F");
@@ -169,11 +218,17 @@ void OnlineBtagAnalyser::tagAndProbeTree()
    tagprobe_tree_ -> Branch("tag_prob_light",&tag_prob_light_,"tag_prob_light/F");
    tagprobe_tree_ -> Branch("tag_pt",&tag_pt_,"tag_pt/F");
    tagprobe_tree_ -> Branch("tag_eta",&tag_eta_,"tag_eta/F");
-   tagprobe_tree_ -> Branch("probe_pt",&probe_pt_,"probe_pt/F");
-   tagprobe_tree_ -> Branch("probe_eta",&probe_eta_,"probe_eta/F");
-   tagprobe_tree_ -> Branch("probe_match",&probe_match_,"probe_match/I");
+   tagprobe_tree_ -> Branch("tag_phi",&tag_phi_,"tag_phi/F");
+   tagprobe_tree_ -> Branch("tag_match",&tag_match_,"tag_match/I");
+   tagprobe_tree_ -> Branch("tag_btag_sfl",&tag_btag_sfl_,"tag_btag_sfl/F");
+   tagprobe_tree_ -> Branch("tag_btag_sfm",&tag_btag_sfm_,"tag_btag_sfm/F");
+   tagprobe_tree_ -> Branch("tag_btag_sft",&tag_btag_sft_,"tag_btag_sft/F");
+
+   /// Jet3 variables
    tagprobe_tree_ -> Branch("jet3_pt",&jet3_pt_,"jet3_pt/F");
    tagprobe_tree_ -> Branch("jet3_eta",&jet3_eta_,"jet3_eta/F");
+   tagprobe_tree_ -> Branch("jet3_phi",&jet3_phi_,"jet3_phi/F");
+   // event weight 
    tagprobe_tree_ -> Branch("weight",&tpweight_,"weight/F");
    
 }
@@ -187,6 +242,57 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
    if ( std::string(h1_["cutflow"] -> GetXaxis()-> GetBinLabel(cutflow_+1)) == "" ) 
       h1_["cutflow"] -> GetXaxis()-> SetBinLabel(cutflow_+1,"Fill TagAndProbe tree");
 
+   // variables for the tmva tree
+   variables_ai();   
+   
+   tpweight_         = weight_;
+   
+   tagprobe_tree_ -> Fill();
+   h1_["cutflow"] -> Fill(cutflow_,weight_);
+
+}
+
+void OnlineBtagAnalyser::variables_ai()
+{
+   process_id_       = config_->processId();
+   ptimbalance_      = fabs(selectedJets_[probe_jet_]->pt() - selectedJets_[tag_jet_]->pt())/selectedJets_[probe_jet_]->pt();
+   dphi_             = fabs(selectedJets_[probe_jet_]->deltaPhi(*selectedJets_[tag_jet_]));
+   deta_             = fabs(selectedJets_[probe_jet_]->eta() - selectedJets_[tag_jet_]->eta());
+   dr_               = fabs(selectedJets_[probe_jet_]->deltaR(*selectedJets_[tag_jet_]));
+
+   probe_pt_         = selectedJets_[probe_jet_]->pt();
+   probe_eta_        = selectedJets_[probe_jet_]->eta();
+   probe_phi_        = selectedJets_[probe_jet_]->phi();
+   probe_qglikelihood_ = selectedJets_[probe_jet_]->qgLikelihood();
+   probe_prob_b_       = selectedJets_[probe_jet_]->btag("btag_dfb");
+   probe_prob_bb_      = selectedJets_[probe_jet_]->btag("btag_dfbb");
+   probe_prob_lepb_    = selectedJets_[probe_jet_]->btag("btag_dflepb");
+   probe_prob_c_       = selectedJets_[probe_jet_]->btag("btag_dfc");
+   probe_prob_g_       = selectedJets_[probe_jet_]->btag("btag_dfg");
+   probe_prob_light_   = selectedJets_[probe_jet_]->btag("btag_dflight");
+
+
+   tag_qglikelihood_ = selectedJets_[tag_jet_]->qgLikelihood();
+   tag_prob_b_       = selectedJets_[tag_jet_]->btag("btag_dfb");
+   tag_prob_bb_      = selectedJets_[tag_jet_]->btag("btag_dfbb");
+   tag_prob_lepb_    = selectedJets_[tag_jet_]->btag("btag_dflepb");
+   tag_prob_c_       = selectedJets_[tag_jet_]->btag("btag_dfc");
+   tag_prob_g_       = selectedJets_[tag_jet_]->btag("btag_dfg");
+   tag_prob_light_   = selectedJets_[tag_jet_]->btag("btag_dflight");
+   tag_pt_           = selectedJets_[tag_jet_]->pt();
+   tag_eta_          = selectedJets_[tag_jet_]->eta();
+   tag_phi_          = selectedJets_[tag_jet_]->phi();
+
+
+   /// Jet3 variables
+   if ( selectedJets_.size() > 2 )
+   {
+      jet3_pt_       = selectedJets_[2]->pt();
+      jet3_eta_      = selectedJets_[2]->eta();
+      jet3_phi_      = selectedJets_[2]->phi();
+   }
+
+   /// Flavours of tag and probe 
    if ( config_->isMC() && config_ -> histogramJetsPerFlavour() )
    {
       if ( ! config_ -> useJetsExtendedFlavour() )
@@ -212,39 +318,15 @@ void OnlineBtagAnalyser::fillTagAndProbeTree()
 
       }
    }
-
-   // variables for the tmva tree
-   variables_ai();   
-   
-   tpweight_         = weight_;
-   
-   tagprobe_tree_ -> Fill();
-   h1_["cutflow"] -> Fill(cutflow_,weight_);
-
-}
-
-void OnlineBtagAnalyser::variables_ai()
-{
-   process_id_       = config_->processId();
-   ptimbalance_      = fabs(selectedJets_[probe_jet_]->pt() - selectedJets_[tag_jet_]->pt())/selectedJets_[probe_jet_]->pt();
-   dphi_             = fabs(selectedJets_[probe_jet_]->deltaPhi(*selectedJets_[tag_jet_]));
-   deta_             = fabs(selectedJets_[probe_jet_]->eta() - selectedJets_[tag_jet_]->eta());
-   dr_               = fabs(selectedJets_[probe_jet_]->deltaR(*selectedJets_[tag_jet_]));
-   tag_qglikelihood_ = selectedJets_[tag_jet_]->qgLikelihood();
-   tag_prob_b_       = selectedJets_[tag_jet_]->btag("btag_dfb");
-   tag_prob_bb_      = selectedJets_[tag_jet_]->btag("btag_dfbb");
-   tag_prob_lepb_    = selectedJets_[tag_jet_]->btag("btag_dflepb");
-   tag_prob_c_       = selectedJets_[tag_jet_]->btag("btag_dfc");
-   tag_prob_g_       = selectedJets_[tag_jet_]->btag("btag_dfg");
-   tag_prob_light_   = selectedJets_[tag_jet_]->btag("btag_dflight");
-   tag_pt_           = selectedJets_[tag_jet_]->pt();
-   tag_eta_          = selectedJets_[tag_jet_]->eta();
-   probe_pt_         = selectedJets_[probe_jet_]->pt();
-   probe_eta_        = selectedJets_[probe_jet_]->eta();
-   if ( selectedJets_.size() > 2 )
+   /// btag scale factors
+   if ( config_->isMC() )
    {
-      jet3_pt_       = selectedJets_[2]->pt();
-      jet3_eta_      = selectedJets_[2]->eta();
+      probe_btag_sfl_ = this->btagSF(probe_jet_+1, "loose").nominal;
+      probe_btag_sfm_ = this->btagSF(probe_jet_+1, "medium").nominal;
+      probe_btag_sft_ = this->btagSF(probe_jet_+1, "tight").nominal;
+      tag_btag_sfl_ = this->btagSF(tag_jet_+1, "loose").nominal;
+      tag_btag_sfm_ = this->btagSF(tag_jet_+1, "medium").nominal;
+      tag_btag_sft_ = this->btagSF(tag_jet_+1, "tight").nominal;
    }
    
    varsf_ai_["ptimbalance"]      = ptimbalance_;
@@ -329,4 +411,10 @@ void OnlineBtagAnalyser::probeMatch(const bool & match)
 {
    if ( match ) probe_match_ = 1;
    else probe_match_ = 0;
+}
+
+void OnlineBtagAnalyser::tagMatch(const bool & match)
+{
+   if ( match ) tag_match_ = 1;
+   else tag_match_ = 0;
 }
