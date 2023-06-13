@@ -37,53 +37,92 @@ int main(int argc, char **argv)
 
    onlinebtag.tagAndProbeTree();
 
-   for (int i = 0; i < onlinebtag.nEvents(); ++i)
+   if ( workflow < 4 )
    {
-      // ========   GENERAL SELECTION    ==========
-      if (!onlinebtag.event(i))                             continue;
-      if (!onlinebtag.selectionHLT())                       continue;
-      if (!onlinebtag.selectionL1 ())                       continue;
-      if (!onlinebtag.selectionPrimaryVertex())             continue;
-      if (!onlinebtag.selectionJetId())                     continue;
-      if (!onlinebtag.selectionJetPileupId())               continue;
-      if (!onlinebtag.selectionNJets())                     continue;
-      onlinebtag.actionApplyBjetRegression();                           
-      onlinebtag.actionApplyJER();                                      
-      if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
-      if ( workflow == 2 )
+      for (int i = 0; i < onlinebtag.nEvents(); ++i)
       {
-         if (!onlinebtag.dijetTagAndProbe())                continue;
-      }
+         // ========   GENERAL SELECTION    ==========
+         if (!onlinebtag.event(i))                             continue;
+         if (!onlinebtag.selectionHLT())                       continue;
+         if (!onlinebtag.selectionL1 ())                       continue;
+         if (!onlinebtag.selectionPrimaryVertex())             continue;
+         if (!onlinebtag.selectionJetId())                     continue;
+         if (!onlinebtag.selectionJetPileupId())               continue;
+         if (!onlinebtag.selectionNJets())                     continue;
+         onlinebtag.actionApplyBjetRegression();                           
+         onlinebtag.actionApplyJER();                                      
+         if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
+         if ( workflow == 2 )
+         {
+            if (!onlinebtag.dijetTagAndProbe())                continue;
+         }
 
-      // ========   TAG SELECTION    ==========
-      if (!onlinebtag.selectionJet(tag))                    continue;   
-      if (!onlinebtag.onlineJetMatching(tag))               continue;
-      if (!onlinebtag.selectionBJet(tag))                   continue;
-      onlinebtag.actionApplyBtagSF(tag);
-      if (!onlinebtag.onlineBJetMatching(tag))              continue;
-      // additional tag selection
-      if (!onlinebtag.selectionJetQGlikelihood(tag))        continue;
-      if (!onlinebtag.selectionBJetProbBB(tag))             continue;
-      if (!onlinebtag.selectionBJetProbC(tag))              continue;
-      onlinebtag.fillJetHistograms("tag");
+         // ========   TAG SELECTION    ==========
+         if (!onlinebtag.selectionJet(tag))                    continue;   
+         if (!onlinebtag.onlineJetMatching(tag))               continue;
+         if (!onlinebtag.selectionBJet(tag))                   continue;
+         onlinebtag.actionApplyBtagSF(tag);
+         if (!onlinebtag.onlineBJetMatching(tag))              continue;
+         // additional tag selection
+         if (!onlinebtag.selectionJetQGlikelihood(tag))        continue;
+         if (!onlinebtag.selectionBJetProbBB(tag))             continue;
+         if (!onlinebtag.selectionBJetProbC(tag))              continue;
+         onlinebtag.fillJetHistograms("tag");
 
-      // ========   PROBE SELECTION    ==========
-      if (!onlinebtag.selectionJet(probe))                  continue;
-      if (!onlinebtag.onlineJetMatching(probe))             continue;
-      if (!onlinebtag.selectionBJet(probe))                 continue;
-      onlinebtag.actionApplyBtagSF(probe);
-      onlinebtag.fillJetHistograms("probe");
-      if ( workflow == 3 )
-      {
-         onlinebtag.probeMatch(onlinebtag.onlineBJetMatching(probe));
-         onlinebtag.fillTagAndProbeTree();
-      }
-      // ========   PROBE MATCHING    ==========
-      if ( workflow != 3)
-      {
-         if (!onlinebtag.onlineBJetMatching(probe))            continue;
-      }
-      onlinebtag.fillJetHistograms("probe_match");
+         // ========   PROBE SELECTION    ==========
+         if (!onlinebtag.selectionJet(probe))                  continue;
+         if (!onlinebtag.onlineJetMatching(probe))             continue;
+         if (!onlinebtag.selectionBJet(probe))                 continue;
+         onlinebtag.actionApplyBtagSF(probe);
+         onlinebtag.fillJetHistograms("probe");
+         if ( workflow == 3 )
+         {
+            onlinebtag.probeMatch(onlinebtag.onlineBJetMatching(probe));
+            onlinebtag.fillTagAndProbeTree();
+         }
+         // ========   PROBE MATCHING    ==========
+         if ( workflow != 3)
+         {
+            if (!onlinebtag.onlineBJetMatching(probe))            continue;
+         }
+         onlinebtag.fillJetHistograms("probe_match");
 
       } // end loop
+   }
+
+   if ( workflow == 4 )
+   {
+      for (int i = 0; i < onlinebtag.nEvents(); ++i)
+      {
+         // ========   GENERAL SELECTION    ==========
+         if (!onlinebtag.event(i))                             continue;
+         if (!onlinebtag.selectionHLT())                       continue;
+         if (!onlinebtag.selectionL1 ())                       continue;
+         if (!onlinebtag.selectionPrimaryVertex())             continue;
+         if (!onlinebtag.selectionJetId())                     continue;
+         if (!onlinebtag.selectionJetPileupId())               continue;
+         if (!onlinebtag.selectionNJets())                     continue;
+         onlinebtag.actionApplyBjetRegression();                           
+         onlinebtag.actionApplyJER();                                  
+
+         // ========   TAG SELECTION    ==========
+         if (!onlinebtag.selectionJet(tag))                    continue;
+         if (!onlinebtag.onlineJetMatching(tag))               continue;  
+         // ========   PROBE SELECTION    ==========
+         if (!onlinebtag.selectionJet(probe))                  continue;
+         if (!onlinebtag.onlineJetMatching(probe))             continue;
+
+         // =======
+         if (!onlinebtag.selectionJetDphi(tag, probe))         continue;
+
+         onlinebtag.tagMatch(onlinebtag.onlineBJetMatching(tag));
+         onlinebtag.probeMatch(onlinebtag.onlineBJetMatching(probe));
+
+         // Ntuple
+         onlinebtag.fillTagAndProbeTree();
+
+
+      } // end loop
+   }
+
 }
