@@ -55,18 +55,23 @@ int df_full_analysis()
     if ( ! jet3_veto ) s_jet3_veto = "";
 
     std::string era = "*";
+    std::string era_title = era;
     if ( ! is_mc )
     {
         if ( era == "A") color = kMagenta;
         if ( era == "B") color = kCyan;
         if ( era == "C") color = kBlue;
         if ( era == "D") color = kRed;
-        if ( era == "*") color = kBlack;
+        if ( era == "*")
+        {
+            color = kBlack;
+            era_title = "ABCD";
+        }
     }
 
     // open root files
     std::string file_name = Form("nfs/2018/v6/data/wf%d/histograms_2018_v6_data_JetHT_Run2018%s_Jet*_SR_wf%d.root",workflow,era.c_str(),workflow);
-    std::string output_name = Form("eff_result%s%s_2018%s",s_jet3_veto.c_str(),s_tag_probbb.c_str(),era.c_str());
+    std::string output_name = Form("eff_result%s%s_2018%s",s_jet3_veto.c_str(),s_tag_probbb.c_str(),era_title.c_str());
     if ( is_mc )
     {
         file_name = Form("nfs/2018/v6/mc/wf%d/histograms_2018_v6_mc_QCD_HT*_Jet*_SR_wf%d.root",workflow,workflow);
@@ -138,7 +143,8 @@ int df_full_analysis()
                         .Histo1D(pt_histo_model, jet_pt_column,"weight")});
                     h_pt_jet_probe_range[range] -> Write();
                 }
-                // MC stuff and for tag jets and not for matched probes
+                // Flavour compositions of tag and probe
+                // MC stuff and for tag/probe jets and not for matched probes
                 if ( jet_type == "probe_match" || (!is_mc) ) continue;
                 for (auto& [flavour, flavour_id]: m_flavour_id_) 
                 {
