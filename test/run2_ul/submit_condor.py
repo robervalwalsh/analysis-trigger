@@ -52,7 +52,7 @@ template = 'tagandprobe_fh_2018ul_template.cfg'
 year = '2018'
 version = 'v6'
 type = 'data'
-workflow = 4
+workflow = 3
 workflow_title = 'Tag&Probe online btag'
 if workflow == 2:
     workflow_title += ' w/ 3rd jet veto'

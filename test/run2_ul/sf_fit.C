@@ -1,27 +1,27 @@
 int sf_fit()
 {
-    bool compare = true;
+    bool compare = false;
     float xmin = 40;
-    float xmax = 1000;
-    float ymin = 0.3;
-    float ymax = 1.7;
+    float xmax = 600;
+    float ymin = 0.75;
+    float ymax = 1.25;
     int nbins = int(xmax - xmin);
 
 
-    TFile * f = new TFile("online_btag_SF_j3veto_probbb_2018.root","old");
+    TFile * f = new TFile("save4/online_btag_SF_j3veto_probbb_2018.root","old");
     TGraphAsymmErrors * g_sf = (TGraphAsymmErrors*) f->Get("scale_factors_graph");
-    g_sf -> SetMarkerColor(kRed);
-    g_sf -> SetLineColor(kRed);
+    g_sf -> SetMarkerColor(kBlack);
+    g_sf -> SetLineColor(kBlack);
 
     g_sf->GetFunction("fpol")->Delete();
 
-    // g_sf -> RemovePoint(g_sf->GetN()-1);
+    g_sf -> RemovePoint(g_sf->GetN()-1);
 
     TCanvas * c1 = new TCanvas("c1","");
 
     // char const * const x_shift = "0";
     TF1 *fpol = new TF1("fpol", "pol1", xmin, xmax);
-    fpol -> SetLineColor(kRed);
+    fpol -> SetLineColor(kBlack);
     fpol -> SetLineStyle(2);
     auto fit_result = g_sf->Fit(fpol, "QSR");
     fpol -> FixParameter(0,fpol->GetParameter(0));
@@ -34,16 +34,21 @@ int sf_fit()
     int ngr = g_sf->GetN();
     TH1D *hint = new TH1D("hint","", nbins, xmin, xmax);
     (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint,0.68);
-    hint->SetFillColor(kRed);
-    hint->SetFillStyle(3002);
-    hint->GetYaxis()->SetRangeUser(ymin,ymax);
-    hint->GetYaxis()->SetTitle("rel. online btag scale factor");
-    hint->GetXaxis()->SetTitle("jet p_{T} [GeV]");
-    hint->SetStats(false);
-    // hint->GetXaxis()->SetRangeUser(xmin,xmax);
-    hint ->SetLineColor(kRed);
-    hint->Draw("e3");
+    TH1D *hint2 = new TH1D("hint","", nbins, xmin, xmax);
+    (TVirtualFitter::GetFitter())->GetConfidenceIntervals(hint2,0.95);
+    hint2->SetFillColor(kYellow);
+    //hint2->SetFillStyle(3002);
+    hint2->GetYaxis()->SetRangeUser(ymin,ymax);
+    hint2->GetYaxis()->SetTitle("rel. online btag scale factor");
+    hint2->GetXaxis()->SetTitle("jet p_{T} [GeV]");
+    hint2->SetStats(false);
+    // hint2->GetXaxis()->SetRangeUser(xmin,xmax);
+    hint2 ->SetLineColor(kBlack);
+    hint2->Draw("e3");
 
+    hint->SetFillColor(kGreen);
+    hint ->SetLineColor(kBlack);
+    hint->Draw("e3 same");
     g_sf->Draw("psame");
 
 
@@ -84,6 +89,6 @@ int sf_fit()
         fit_result_2 ->Print("V");
     }
 
-    c1 -> SaveAs("online_btag_SF_j3veto_probbb_2018_compare_fixpars_linear.png");
+    c1 -> SaveAs("online_btag_SF_j3veto_probbb_2018_fixpars_linear_nolastpoint.png");
     return 0;
 }

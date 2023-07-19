@@ -54,7 +54,7 @@ int df_analysis()
         if ( era == "*") color = kBlack;
     }
 
-
+    // open root files
     std::string file_name = Form("nfs/2018/v6/data/wf%d/histograms_2018_v6_data_JetHT_Run2018%s_Jet*_SR_wf%d.root",workflow,era.c_str(),workflow);
     std::string output_name = Form("eff_result%s%s_2018%s",s_jet3_veto.c_str(),s_tag_probbb.c_str(),era.c_str());
     if ( is_mc )
@@ -64,14 +64,20 @@ int df_analysis()
     }
     auto tree_name = "TagAndProbe";
     ROOT::RDataFrame df(tree_name, file_name); 
+    // ----
+
     
     // definitions
     std::function<float(float, float)> pt12_avg = [](float probe_pt, float tag_pt) { return static_cast<float>((probe_pt+tag_pt)/2.f); };
-    
+    // ----
+
     // global filters
     std::function<bool(float, float)> jet3_veto_filter = [&jet3_veto](float jet3_pt, float pt12_avg) { return  !jet3_veto || jet3_pt < 0.3 * pt12_avg; };
+    // ----
 
+    // jet pt histograms for each range
     std::map<std::string, std::map<int,RTH1D> > h_pt_jet_range;
+    // jet pt histograms for each flavour and range
     std::map<std::string, std::map<int, std::map<std::string,RTH1D> > > h_pt_jet_range_flavour;
 
     { // mutex guard
@@ -104,6 +110,7 @@ int df_analysis()
                 //     h_pt_jet_range[jet_type].insert({range, ndf.Filter(histo_cuts)
                 //                                            .Filter(jet3_veto_filter, {"jet3_pt", "pt12_avg"})
                 //                                            .Histo1D(histo_model, jet_pt_column,"weight")});
+                // MC stuff and for tag jets and not for matched probes
                 if ( jet_type == "probe_match" || (!is_mc) ) continue;
                 for (auto& [flavour, flavour_id]: m_flavour_id_) 
                 {
