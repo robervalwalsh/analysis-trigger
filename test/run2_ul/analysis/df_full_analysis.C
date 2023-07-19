@@ -22,9 +22,11 @@ std::vector<std::string> v_jettype_;
 std::map<std::string,float> m_btag_wp_;
 float dphi_min_;
 
-
+// FUNCTIONS
 int init();
-
+std::string histograms_filters(const std::string & pt_range_cut, const int & range, const std::string & jet_type, const bool & tag_probbb );
+std::map<std::string,RTH1D> add_range_histograms(std::map<std::string, std::map<int,RTH1D> > h_range, TFile * f = nullptr);
+std::map<std::string, std::map<std::string,RTH1D> > add_range_flavour_histograms(std::map<std::string, std::map<int, std::map<std::string,RTH1D> > > h_range_flavour, TFile * f = nullptr);
 
 int df_full_analysis()
 {
@@ -37,7 +39,7 @@ int df_full_analysis()
     bool tag_probbb = true;
     bool jet3_veto = true;
     int workflow = 4;
-    bool is_mc = false;
+    bool is_mc = true;
     std::string probe_wp = "medium";
     std::string tag_wp = "tight";
 
@@ -97,9 +99,12 @@ int df_full_analysis()
 // ! HISTOGRAMS AND GRAPHS
     // jet pt histograms for each range
     std::map<std::string, std::map<int,RTH1D> > h_pt_jet_range;
-    std::map<int,RTH1D> h_pt_jet_probe_range;
+    std::map<std::string, std::map<int,RTH1D> > h_pt_wide_range;
+    std::map<std::string,RTH1D> h_pt_wide;
     // jet pt histograms for each flavour and range
     std::map<std::string, std::map<int, std::map<std::string,RTH1D> > > h_pt_jet_range_flavour;
+    std::map<std::string, std::map<int, std::map<std::string,RTH1D> > > h_pt_wide_range_flavour;
+    std::map<std::string, std::map<std::string,RTH1D> > h_pt_wide_flavour;
 // !
 
     { // * mutex guard
@@ -115,7 +120,7 @@ int df_full_analysis()
                      .Filter(jet3_veto_filter, {"jet3_pt", "pt12_avg"})
                      .Filter(probe_btag_filter,{"probe_btag"})
                     ;
-        TFile * f_pt_out = new TFile(Form("pt_%s.root",output_name.c_str()),"recreate");
+        // TFile * f_pt_out = new TFile(Form("pt_%s.root",output_name.c_str()),"recreate");
         
         
         for ( auto & jet_type: v_jettype_) // probe, tag
@@ -123,42 +128,55 @@ int df_full_analysis()
             for (auto& [range, pt_range_cut]: m_pt_range_cut_)
             {
                 int nbins = (int) (m_pt_range_[range].second - m_pt_range_[range].first)/m_rebin_[range];
-                std::string histo_cuts = pt_range_cut;
-                if ( tag_probbb ) 
-                    histo_cuts += Form(" && %s",m_probbb_cut_[range].c_str());
-                histo_cuts += Form(" && process_id == %d",m_process_id_[range]);
-                if ( jet_type == "probe_match")
-                    histo_cuts += " && probe_match == 1";
-                
+                std::string histo_cuts = histograms_filters(pt_range_cut, range, jet_type, tag_probbb );
                 std::string histo_title = Form("pt_%s_range%d",jet_type.c_str(),range);
-                std::string jet_pt_column = Form("%s_pt",jet_type.c_str());
-                if ( jet_type == "probe_match" ) jet_pt_column = "probe_pt";
+                std::string jet_pt_column = jet_type == "probe_match" ? "probe_pt" : Form("%s_pt", jet_type.c_str());
+                
+                auto filtered_ndf = ndf.Filter(histo_cuts);
+
+                // TODO: USE UNIFORM BINNING OVER THE LARGEST RANGE POSSIBLE, e.g. 0-1500 GeV with 1 GeV binning.
+                // TODO: then sum all histograms and rebin accordingly
+                // histo models
                 TH1DModel histo_model = {histo_title.c_str(), histo_title.c_str(), nbins, m_pt_range_[range].first, m_pt_range_[range].second};
-                h_pt_jet_range[jet_type].insert({range, ndf.Filter(histo_cuts)
-                    .Histo1D(histo_model, jet_pt_column,"weight")});
-                if ( jet_type == "probe" )
-                {
-                    TH1DModel pt_histo_model = {Form("pt_probe_range%d",range), Form("pt_probe_range%d",range), 1500, 0, 1500};
-                    h_pt_jet_probe_range.insert({range, ndf.Filter(histo_cuts)
-                        .Histo1D(pt_histo_model, jet_pt_column,"weight")});
-                    h_pt_jet_probe_range[range] -> Write();
-                }
+                TH1DModel pt_wide_histo_model = {Form("pt_wide_range%d",range), Form("pt_wide_range%d",range), 1500, 0, 1500};
+
+                // histo fill
+                h_pt_jet_range[jet_type].insert({range, filtered_ndf.Histo1D(histo_model, jet_pt_column,"weight")});
+                h_pt_wide_range[jet_type].insert({range, filtered_ndf.Histo1D(pt_wide_histo_model, jet_pt_column,"weight")});
                 // Flavour compositions of tag and probe
                 // MC stuff and for tag/probe jets and not for matched probes
                 if ( jet_type == "probe_match" || (!is_mc) ) continue;
+                
                 for (auto& [flavour, flavour_id]: m_flavour_id_) 
                 {
-                    h_pt_jet_range_flavour[jet_type][range].insert({flavour, ndf.Filter(histo_cuts)
-                        .Filter(Form("%s_flavour == %d",jet_type.c_str(),flavour_id))
+                    std::string flavour_filter = Form("%s_flavour == %d",jet_type.c_str(),flavour_id);
+                    h_pt_jet_range_flavour[jet_type][range].insert({flavour, filtered_ndf.Filter(flavour_filter)
                         .Histo1D(histo_model, jet_pt_column,"weight")});
+                    h_pt_wide_range_flavour[jet_type][range].insert({flavour, filtered_ndf.Filter(flavour_filter)
+                        .Histo1D(pt_wide_histo_model, jet_pt_column,"weight")});
                 }
             }
         }
-        f_pt_out -> Close();
+        // f_pt_out -> Close();
 
         auto report = ndf.Report(); 
         report->Print();
     } // * mutex end
+
+    // Add histograms ranges 
+    { // * mutex guard
+        std::lock_guard<std::mutex> lock(mtx);
+        TFile * f_pt_out = new TFile(Form("pt_%s.root",output_name.c_str()),"recreate");
+
+        h_pt_wide = add_range_histograms(h_pt_wide_range,f_pt_out);
+
+        if ( is_mc )
+            h_pt_wide_flavour = add_range_flavour_histograms(h_pt_wide_range_flavour,f_pt_out);
+
+        f_pt_out -> Close();
+
+    } // * mutex end
+
 
 // ! HISTOGRAMS AND GRAPHS
     // jet pt efficiencies for each range
@@ -287,6 +305,69 @@ int df_full_analysis()
  
     return 0;
 }
+
+std::map<std::string, std::map<std::string,RTH1D> > add_range_flavour_histograms(std::map<std::string, std::map<int, std::map<std::string,RTH1D> > > h_range_flavour, TFile * f)
+{
+    std::map<std::string, std::map<std::string,RTH1D> >  h_sum;
+    for (auto& [flavour, flavour_id]: m_flavour_id_) 
+    {
+        for ( auto & jet_type: v_jettype_) // probe, tag
+        {
+            if (jet_type == "probe_match") continue;
+            h_sum[jet_type][flavour] = h_range_flavour[jet_type][1][flavour];
+            h_sum[jet_type][flavour]->SetName(Form("pt_%s_%s",jet_type.c_str(),flavour.c_str()));
+            for (auto& [range, pt_range_cut]: m_pt_range_cut_)
+            {
+                if ( range == 1 ) continue;
+                h_sum[jet_type][flavour]->Add(h_range_flavour[jet_type][range][flavour].GetPtr());
+            }
+            if ( f )
+            {
+                f->cd();
+                h_sum[jet_type][flavour]->Write();
+            }
+        }
+       
+    }
+    return h_sum;
+}
+
+
+std::map<std::string,RTH1D> add_range_histograms(std::map<std::string, std::map<int,RTH1D> > h_range, TFile * f)
+{
+    std::map<std::string,RTH1D> h_sum;
+    for ( auto & jet_type: v_jettype_) // probe, tag
+    {
+        h_sum[jet_type] = h_range[jet_type][1];
+        h_sum[jet_type]->SetName(Form("pt_%s",jet_type.c_str()));
+        for (auto& [range, pt_range_cut]: m_pt_range_cut_)
+        {
+            if ( range == 1 ) continue;
+            h_sum[jet_type]->Add(h_range[jet_type][range].GetPtr());
+        }
+        if ( f )
+        {
+            f->cd();
+            h_sum[jet_type]->Write();
+        }
+    }
+    return h_sum;
+
+}
+
+
+std::string histograms_filters(const std::string & pt_range_cut, const int & range, const std::string & jet_type, const bool & tag_probbb )
+{
+    std::string histo_cuts = pt_range_cut;
+    if ( tag_probbb ) 
+        histo_cuts += Form(" && %s",m_probbb_cut_[range].c_str());
+    histo_cuts += Form(" && process_id == %d",m_process_id_[range]);
+    if ( jet_type == "probe_match")
+        histo_cuts += " && probe_match == 1";
+
+    return histo_cuts; 
+}
+
 
 
 int init()
