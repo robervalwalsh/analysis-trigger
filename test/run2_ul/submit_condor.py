@@ -2,24 +2,31 @@
 
 import os, glob, sys
 import pandas as pd
+import argparse
 
 # todo: read csv and template cfg from the command line
 # todo: as well as data or qcd
 
-current_dir = os.getcwd()
-nfs_dir = os.path.realpath('nfs')
 
-def create_config(alias, parameters, template):
+def create_config(alias, parameters, template, type):
     config = template.replace('template.cfg', f'{alias}.cfg')
     # Read in the file
     with open(template, 'r') as file :
         filedata = file.read()
     # Replace the target string
     for par, value in parameters.items():
-        filedata = filedata.replace(par, str(value))
+        mypar = par
+        if 'PILEUP_WEIGHT' in mypar:
+            if mypar == f'PILEUP_WEIGHT_{type.upper()}':            
+                mypar = 'PILEUP_WEIGHT'
+            else:   
+                continue
+        filedata = filedata.replace(mypar, str(value))
     # Write the file out again
     with open(config, 'w') as file:
         file.write(filedata)
+    # sed_cmd = f"sed -i '/PileupWeight/s/_v//' {config}"
+    # os.system(sed_cmd)
     return config
 
 def get_parameters(df,index):
@@ -47,93 +54,120 @@ def get_files_list(year,version,type,benriched = False):
         files_list = glob.glob(f'{data_dir}/JetHT*_rootFileList.txt')
     return files_list
 
-configs = pd.read_csv('configs_2018.csv')
-template = 'tagandprobe_fh_2018ul_template.cfg'
-year = '2018'
-version = 'v6'
-type = 'data'
-workflow = 3
-workflow_title = 'Tag&Probe online btag'
-if workflow == 2:
-    workflow_title += ' w/ 3rd jet veto'
+def get_command_line():
+    
+    parser = argparse.ArgumentParser(description="Command line arguments")
+    parser.add_argument('--cfg', help='Configuration file template', required=True)
+    parser.add_argument('--csv', help='Configuration values', required=True)
+    parser.add_argument('--year', help='Analysis year', required=True)
+    parser.add_argument('--version', help='Analysis version', required=True)
+    parser.add_argument('--type', help='Analysis type', required=True)
+    parser.add_argument('--wf', type=int, help='Analysis workflow', default=4)
+    parser.add_argument('--wf_title', help='Analysis workflow title', default="Tag&Probe online btag")
+    parser.add_argument('--sl', help='Semileptonic analysis', action='store_true')
+    args = parser.parse_args()
+    
+    return args
 
-cmssw_src = os.path.join(os.getenv('CMSSW_BASE'),'src')
-json = f'{cmssw_src}/Analysis/Tools/data/calibrations/{year}/certified/Cert_Run2018ABCD-DeepCSV_13TeV_Legacy2018_Collisions18_JSON.txt'
+def main():
+    current_dir = os.getcwd()
+    nfs_dir = os.path.realpath('nfs')
+    args = get_command_line()
+    
+    config_values = pd.read_csv(args.csv, comment='#')
+    config_template = args.cfg
+    year = args.year
+    version = args.version
+    type = args.type
+    workflow = args.wf
+    workflow_title = args.wf_title
 
-work_dir = f'{nfs_dir}/{year}/{version}/{type}/wf{workflow}'
-os.makedirs(work_dir, exist_ok=True)
+    # configs = pd.read_csv('configs_2017_FH_FH.csv')
+    # template = 'tagandprobe_fh_2017ul_template.cfg'
+    # year = '2017'
+    # version = 'v6'
+    # type = 'data'
+    # workflow = 4
+    # workflow_title = 'Tag&Probe online btag'
+    # if workflow == 2:
+    #     workflow_title += ' w/ 3rd jet veto'
 
-config_files = {}
-for i in range(len(configs)):
-    alias,parameters = get_parameters(configs,i)
-    config_file = create_config(alias,parameters,template)
-    config_files[alias] = config_file
-    try:
-        os.symlink(f'{current_dir}/{config_file}',f'{work_dir}/{config_file}')
-    except FileExistsError:
-        pass
+    cmssw_src = os.path.join(os.getenv('CMSSW_BASE'),'src')
+    
+    work_dir = f'{nfs_dir}/{year}/{version}/{type}/wf{workflow}'
+    os.makedirs(work_dir, exist_ok=True)
 
-# print(*files_list, sep = "\n")
-
-files_list = get_files_list(year,version,type)
-samples_type = [os.path.basename(f).replace('_rootFileList.txt','') for f in files_list]
-
-
-
-# os.chdir(work_dir)
-
-# options for the macro
-#   -w [ --workflow ] arg (=0)   Workflow number
-#   --workflow_title arg         Workflow title
-#   --mc                         Run on Monte Carlo
-#   --data                       Run on data
-
-macro_opts  = f'--workflow={workflow} '
-macro_opts += f'--workflow_title=\"{workflow_title}\" '
-macro_opts += f'--{type}'
-macro_opts  = f'\'{macro_opts}\''
-
-
-# options for naf_submit
-#   --exe EXE, -e EXE              Executable (REQUIRED)
-#   --config CONFIG, -c CONFIG     Configuration file (REQUIRED)
-#   --ntuples NTUPLES, -n NTUPLES  List of ntuples file
-#   --output OUTPUT, -o OUTPUT     Name of output root file
-#   --nfiles NFILES, -x NFILES     Number of ntuple files per job
-#   --json JSON, -j JSON           JSON file with certified data
-#   --label LABEL, -l LABEL        user label for the submission
-#   --opts OPTS                    additional options for the macro execution (job.sh)
-#   --events EVENTS_MAX            override eventsMax in the config file (default = -1)
-
-# QCD samples for each trigger
-qcd_sample = {}
-qcd_sample['Jet40'] = ['QCD_HT100to200','QCD_HT200to300','QCD_HT300to500']
-qcd_sample['Jet100'] = ['QCD_HT200to300','QCD_HT300to500','QCD_HT500to700','QCD_HT700to1000']
-qcd_sample['Jet200'] = ['QCD_HT500to700','QCD_HT700to1000','QCD_HT1000to1500','QCD_HT1500to2000','QCD_HT2000toInf']
-qcd_sample['Jet350'] = ['QCD_HT1500to2000','QCD_HT2000toInf']
-
-naf_opts = ''
-for alias,cfg in config_files.items():
-    for i,file_list in enumerate(files_list):
-        # if i != 3: continue
-        # if type == 'mc' and samples_type[i] not in qcd_sample[alias]: continue
-        output_root = f'histograms_{year}_{version}_{type}_{samples_type[i]}_{alias}.root'
-        naf_opts  = f' --exe=TagAndProbeOnlineBtag'
-        naf_opts += f' --config={cfg}'
-        naf_opts += f' --ntuples={file_list}'
-        naf_opts += f' --nfiles=5'
-        naf_opts += f' --label=wf{workflow}_{samples_type[i]}'
-        naf_opts += f' --events=-1'
-        naf_opts += f' --output={output_root}'
-        # naf_opts += f' --json={json}'  # TODO: investigate the proble with json; hard-code in the template
-        naf_opts += f' --opts={macro_opts}'
-
-        naf_command = f'cd {work_dir} ; naf_submit.py {naf_opts}'
-        
-        print(naf_command)
-        os.system(naf_command)
-        print()
+    config_files = {}
+    for i in range(len(config_values)):
+        alias,parameters = get_parameters(config_values,i)
+        config_file = create_config(f'{alias}_{type}',parameters,config_template, type)
+        config_files[alias] = config_file
+        try:
+            os.symlink(f'{current_dir}/{config_file}',f'{work_dir}/{config_file}')
+        except FileExistsError:
+            pass
 
 
+    files_list = get_files_list(year,version,type)
+    samples_type = [os.path.basename(f).replace('_rootFileList.txt','') for f in files_list]
 
 
+    # os.chdir(work_dir)
+
+    # TODO: implement options from command line
+    # options for the macro
+    #   -w [ --workflow ] arg (=0)   Workflow number
+    #   --workflow_title arg         Workflow title
+    #   --mc                         Run on Monte Carlo
+    #   --data                       Run on data
+
+    macro_opts  = f'--workflow={workflow} '
+    macro_opts += f'--workflow_title=\"{workflow_title}\" '
+    macro_opts += f'--{type}'
+    macro_opts  = f'\'{macro_opts}\''
+
+
+    # options for naf_submit
+    #   --exe EXE, -e EXE              Executable (REQUIRED)
+    #   --config CONFIG, -c CONFIG     Configuration file (REQUIRED)
+    #   --ntuples NTUPLES, -n NTUPLES  List of ntuples file
+    #   --output OUTPUT, -o OUTPUT     Name of output root file
+    #   --nfiles NFILES, -x NFILES     Number of ntuple files per job
+    #   --json JSON, -j JSON           JSON file with certified data
+    #   --label LABEL, -l LABEL        user label for the submission
+    #   --opts OPTS                    additional options for the macro execution (job.sh)
+    #   --events EVENTS_MAX            override eventsMax in the config file (default = -1)
+
+    # QCD samples for each trigger
+    qcd_sample = {}
+    qcd_sample['Jet40'] = ['QCD_HT100to200','QCD_HT200to300','QCD_HT300to500']
+    qcd_sample['Jet100'] = ['QCD_HT200to300','QCD_HT300to500','QCD_HT500to700','QCD_HT700to1000']
+    qcd_sample['Jet200'] = ['QCD_HT500to700','QCD_HT700to1000','QCD_HT1000to1500','QCD_HT1500to2000','QCD_HT2000toInf']
+    qcd_sample['Jet350'] = ['QCD_HT1500to2000','QCD_HT2000toInf']
+
+    naf_opts = ''
+    for alias,cfg in config_files.items():
+        for i,file_list in enumerate(files_list):
+            # if i != 3: continue
+            # if type == 'mc' and samples_type[i] not in qcd_sample[alias]: continue
+            output_root = f'histograms_{year}_{version}_{type}_{samples_type[i]}_{alias}.root'
+            naf_opts  = f' --exe=TagAndProbeOnlineBtag'
+            naf_opts += f' --config={cfg}'
+            naf_opts += f' --ntuples={file_list}'
+            naf_opts += f' --nfiles=5'
+            naf_opts += f' --label=wf{workflow}_{samples_type[i]}'
+            naf_opts += f' --events=-1'
+            naf_opts += f' --output={output_root}'
+            # naf_opts += f' --json={json}'  # TODO: investigate the proble with json; hard-code in the template
+            naf_opts += f' --opts={macro_opts}'
+
+            naf_command = f'cd {work_dir} ; naf_submit.py {naf_opts}'
+            
+            print(naf_command)
+            os.system(naf_command)
+            print()
+
+
+
+if __name__ == "__main__":
+    main()
