@@ -97,6 +97,8 @@ namespace analysis {
             float jet3_phi_;
             /// event weight 
             float tpweight_;
+            /// primary vertices
+            int num_primary_vertices_;
             TMVA::Reader *reader_ai_; 
             std::shared_ptr<TMVA::Tools> tools_ai_;
             TString dir_ai_;

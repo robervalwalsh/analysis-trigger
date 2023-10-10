@@ -89,6 +89,8 @@ OnlineBtagAnalyser::OnlineBtagAnalyser(int argc, char ** argv) : BaseAnalyser(ar
    jet3_phi_ = -100;
    /// event weight
    tpweight_ = 0;
+   /// primary vertices
+   num_primary_vertices_ = -1;
    
    if ( config_->methodAI() != "" || config_->directoryAI() != "" || config_->variablesAI("F").size() != 0 )
    {
@@ -230,6 +232,9 @@ void OnlineBtagAnalyser::tagAndProbeTree()
    tagprobe_tree_ -> Branch("jet3_phi",&jet3_phi_,"jet3_phi/F");
    // event weight 
    tagprobe_tree_ -> Branch("weight",&tpweight_,"weight/F");
+
+   /// primary vertices
+   tagprobe_tree_ -> Branch("num_vertices",&num_primary_vertices_,"num_vertices/I");
    
 }
 
@@ -318,6 +323,9 @@ void OnlineBtagAnalyser::variables_ai()
 
       }
    }
+   /// primary vertices
+   num_primary_vertices_ = this->numberOfPrimaryVertices();
+
    /// btag scale factors
    if ( config_->isMC() )
    {
