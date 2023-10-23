@@ -51,7 +51,10 @@ def get_files_list(year,version,type,benriched = False):
         if benriched:
             files_list = files_list_bEnriched+files_list_BGenFilter
     if type == 'data':
-        files_list = glob.glob(f'{data_dir}/JetHT*_rootFileList.txt')
+        if year == '2018':
+            files_list = glob.glob(f'{data_dir}/JetHT*_rootFileList.txt')
+        if year =='2017':
+            files_list = glob.glob(f'{data_dir}/BTagCSV_Run2017*_rootFileList.txt')
     return files_list
 
 def get_command_line():
@@ -140,10 +143,10 @@ def main():
 
     # QCD samples for each trigger
     qcd_sample = {}
-    qcd_sample['Jet40'] = ['QCD_HT100to200','QCD_HT200to300','QCD_HT300to500']
-    qcd_sample['Jet100'] = ['QCD_HT200to300','QCD_HT300to500','QCD_HT500to700','QCD_HT700to1000']
-    qcd_sample['Jet200'] = ['QCD_HT500to700','QCD_HT700to1000','QCD_HT1000to1500','QCD_HT1500to2000','QCD_HT2000toInf']
-    qcd_sample['Jet350'] = ['QCD_HT1500to2000','QCD_HT2000toInf']
+    qcd_sample['Jets40'] = ['QCD_HT100to200','QCD_HT200to300','QCD_HT300to500']
+    qcd_sample['Jets100'] = ['QCD_HT200to300','QCD_HT300to500','QCD_HT500to700','QCD_HT700to1000']
+    qcd_sample['Jets200'] = ['QCD_HT500to700','QCD_HT700to1000','QCD_HT1000to1500','QCD_HT1500to2000','QCD_HT2000toInf']
+    qcd_sample['Jets350'] = ['QCD_HT1500to2000','QCD_HT2000toInf']
 
     naf_opts = ''
     for alias,cfg in config_files.items():
