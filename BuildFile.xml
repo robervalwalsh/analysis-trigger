@@ -5,6 +5,7 @@
 <use name="roottmva" />
 <use name="boost" />
 <use name="Analysis/Tools" />
+<use name="fmt"/>
 <export>
   <lib name="1"/>
 </export>
